@@ -349,7 +349,7 @@ export function UserManagementPage() {
                               onClick={() => setSelectedUser(user)}
                               disabled={user.role === 'admin'}
                               className={cn(
-                                'px-4 py-2 text-sm font-medium rounded-xl transition-all shadow-sm',
+                                'px-4 py-2 text-sm font-medium rounded-xl transition-colors shadow-sm',
                                 user.role === 'admin'
                                   ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
                                   : 'bg-primary text-primary-foreground hover:bg-primary/90',
@@ -374,7 +374,7 @@ export function UserManagementPage() {
                                 user.role === 'admin'
                               }
                               className={cn(
-                                'px-4 py-2 text-sm font-medium rounded-xl transition-all shadow-sm',
+                                'px-4 py-2 text-sm font-medium rounded-xl transition-colors shadow-sm',
                                 user.role === 'admin'
                                   ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
                                   : user.isActive
@@ -496,7 +496,7 @@ export function UserManagementPage() {
                       }}
                       disabled={updateRoleMutation.isPending}
                       className={cn(
-                        'w-full p-4 text-left rounded-xl border-2 transition-all flex items-center gap-3 disabled:opacity-50',
+                        'w-full p-4 text-left rounded-xl border-2 transition-colors flex items-center gap-3 disabled:opacity-50',
                         selectedUser.role === role
                           ? 'border-primary bg-primary/10 shadow-md'
                           : 'border-border hover:border-primary/50 hover:bg-muted/50',

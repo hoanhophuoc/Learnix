@@ -340,7 +340,7 @@ export function CourseDetailPage() {
                           key={lesson.id}
                           type="button"
                           className={cn(
-                            'w-full p-4 flex items-center gap-4 transition-all text-left group',
+                            'w-full p-4 flex items-center gap-4 transition-colors text-left group',
                             isLocked
                               ? 'opacity-75 hover:bg-muted/10 cursor-pointer'
                               : 'hover:bg-muted/20 cursor-pointer',

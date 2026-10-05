@@ -135,7 +135,7 @@ export function RegisterForm() {
             {...register('fullName')}
             id="register-fullName"
             type="text"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
             placeholder="John Doe"
           />
         </div>
@@ -160,7 +160,7 @@ export function RegisterForm() {
             {...register('email')}
             id="register-email"
             type="email"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
             placeholder="john@example.com"
           />
         </div>
@@ -185,7 +185,7 @@ export function RegisterForm() {
             {...register('password')}
             id="register-password"
             type={showPassword ? 'text' : 'password'}
-            className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+            className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
             placeholder="••••••••"
           />
           <button
@@ -225,7 +225,7 @@ export function RegisterForm() {
             {...register('confirmPassword')}
             id="register-confirmPassword"
             type={showConfirmPassword ? 'text' : 'password'}
-            className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+            className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
             placeholder="••••••••"
           />
           <button
@@ -286,7 +286,7 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full py-3 px-4 gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-semibold disabled:opacity-50 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 flex items-center justify-center gap-2"
+        className="w-full py-3 px-4 gradient-primary text-white rounded-xl hover:opacity-90 transition-colors font-semibold disabled:opacity-50 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 flex items-center justify-center gap-2"
       >
         {isSubmitting ? (
           <>

@@ -203,7 +203,7 @@ export function QuizGenerationModal({
         showCloseButton={step !== 'preview'}
         onInteractOutside={(e) => e.preventDefault()}
         className={cn(
-          'flex flex-col gap-0 p-0 overflow-hidden bg-background transition-all duration-300',
+          'flex flex-col gap-0 p-0 overflow-hidden bg-background transition-colors duration-300',
           step === 'preview'
             ? 'fixed inset-0 w-screen h-screen !max-w-none !max-h-none !rounded-none !border-none !shadow-none top-0 left-0 translate-x-0 translate-y-0 z-[100] m-0'
             : 'max-w-7xl max-h-[95vh] h-[95vh] rounded-3xl shadow-2xl',
@@ -284,7 +284,7 @@ export function QuizGenerationModal({
                             });
                           }}
                           className={cn(
-                            'flex flex-col items-center justify-center gap-3 p-6 h-auto min-h-[120px] rounded-3xl border-2 transition-all duration-300 group relative overflow-hidden',
+                            'flex flex-col items-center justify-center gap-3 p-6 h-auto min-h-[120px] rounded-3xl border-2 transition-colors duration-300 group relative overflow-hidden',
                             isSelected
                               ? 'border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-400 shadow-lg shadow-violet-500/10'
                               : 'border-border bg-card hover:border-violet-500/30 hover:bg-muted/50',
@@ -348,7 +348,7 @@ export function QuizGenerationModal({
                           type="button"
                           onClick={() => handleLessonToggle(lesson.id)}
                           className={cn(
-                            'flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left group hover:scale-[1.01] active:scale-[0.99]',
+                            'flex items-center gap-4 p-4 rounded-2xl border-2 transition-colors text-left group hover:scale-[1.01] active:scale-[0.99]',
                             isSelected
                               ? 'border-violet-500 bg-violet-500/5 shadow-md shadow-violet-500/5'
                               : 'border-border bg-card hover:border-violet-500/30 hover:bg-muted/50',
@@ -400,7 +400,7 @@ export function QuizGenerationModal({
                         min={1}
                         max={20}
                         {...register('count', { valueAsNumber: true })}
-                        className="w-full h-14 font-bold text-2xl text-center rounded-2xl border-2 bg-background focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all font-mono"
+                        className="w-full h-14 font-bold text-2xl text-center rounded-2xl border-2 bg-background focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-colors font-mono"
                       />
                     </div>
                     <p className="text-xs text-muted-foreground font-medium text-center">
@@ -417,7 +417,7 @@ export function QuizGenerationModal({
                     <Input
                       placeholder="e.g. React Hooks, useEffect..."
                       {...register('topic')}
-                      className="h-14 rounded-2xl border-2 px-5 text-lg bg-background focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all"
+                      className="h-14 rounded-2xl border-2 px-5 text-lg bg-background focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-colors"
                     />
                     <p className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                       <BrainCircuit className="w-3 h-3" />
@@ -488,7 +488,7 @@ export function QuizGenerationModal({
                   {questions.map((q, qIndex) => (
                     <Card
                       key={qIndex}
-                      className="group border-0 bg-card/60 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 ring-1 ring-white/5 overflow-visible"
+                      className="group border-0 bg-card/60 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-colors duration-300 ring-1 ring-white/5 overflow-visible"
                     >
                       <div className="absolute -left-1 top-4 bottom-4 w-1 bg-gradient-to-b from-violet-500 to-indigo-500 rounded-l-full opacity-60 group-hover:opacity-100 transition-opacity" />
 
@@ -556,7 +556,7 @@ export function QuizGenerationModal({
                                   <div
                                     key={oIndex}
                                     className={cn(
-                                      'group/option relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200',
+                                      'group/option relative flex items-start gap-4 p-4 rounded-2xl border transition-colors duration-200',
                                       isCorrect
                                         ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/15'
                                         : 'bg-muted/30 border-transparent hover:bg-muted/50 hover:border-border/50',
@@ -579,7 +579,7 @@ export function QuizGenerationModal({
                                         }
                                       }}
                                       className={cn(
-                                        'w-8 h-8 flex shrink-0 items-center justify-center rounded-xl border-2 transition-all shadow-sm mt-0.5',
+                                        'w-8 h-8 flex shrink-0 items-center justify-center rounded-xl border-2 transition-colors shadow-sm mt-0.5',
                                         isCorrect
                                           ? 'bg-green-500 border-green-500 text-white shadow-green-500/20'
                                           : 'bg-background border-border text-muted-foreground/40 group-hover/option:border-violet-400/50 group-hover/option:text-violet-400',
@@ -717,7 +717,7 @@ export function QuizGenerationModal({
                 type="submit"
                 form="config-form"
                 disabled={generateMutation.isPending}
-                className="h-12 px-8 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-base"
+                className="h-12 px-8 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] transition-colors font-bold text-base"
               >
                 {generateMutation.isPending ? (
                   <>
@@ -744,7 +744,7 @@ export function QuizGenerationModal({
               </Button>
               <Button
                 onClick={handleSave}
-                className="h-12 px-8 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-green-500/25 hover:shadow-green-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-base"
+                className="h-12 px-8 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-green-500/25 hover:shadow-green-500/40 hover:scale-[1.02] active:scale-[0.98] transition-colors font-bold text-base"
               >
                 Looks Good, Create Quiz
                 <Check className="w-5 h-5 ml-2" />

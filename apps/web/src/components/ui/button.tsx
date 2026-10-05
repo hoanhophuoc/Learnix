@@ -54,7 +54,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const buttonStyles = cn(
-    'inline-flex items-center justify-center font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]',
+    'inline-flex items-center justify-center font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]',
     variantStyles.get(variant),
     sizeStyles.get(size),
     className,

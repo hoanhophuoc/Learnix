@@ -12,7 +12,7 @@ export default function BlockedPage() {
 
       <div className="max-w-md w-full relative z-10 text-center space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
         <div className="relative inline-block group">
-          <div className="absolute inset-0 bg-destructive/20 rounded-full blur-xl group-hover:bg-destructive/30 transition-all duration-500" />
+          <div className="absolute inset-0 bg-destructive/20 rounded-full blur-xl group-hover:bg-destructive/30 transition-colors duration-500" />
           <div className="relative w-32 h-32 rounded-full bg-card border-4 border-destructive/10 flex items-center justify-center shadow-2xl">
             <ShieldAlert
               className="w-16 h-16 text-destructive animate-in zoom-in duration-500"
@@ -52,7 +52,7 @@ export default function BlockedPage() {
           <Button
             asChild
             size="lg"
-            className="w-full sm:w-1/2 rounded-xl gradient-primary shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-0.5"
+            className="w-full sm:w-1/2 rounded-xl gradient-primary shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-colors hover:-translate-y-0.5"
           >
             <a href="mailto:support@learnix.com">Contact Support</a>
           </Button>
@@ -60,7 +60,7 @@ export default function BlockedPage() {
             asChild
             variant="outline"
             size="lg"
-            className="w-full sm:w-1/2 rounded-xl hover:bg-muted/50 transition-all"
+            className="w-full sm:w-1/2 rounded-xl hover:bg-muted/50 transition-colors"
           >
             <Link to="/">Back to Home</Link>
           </Button>

@@ -579,7 +579,7 @@ export default function QuizEditorPage() {
         <DialogContent
           onInteractOutside={(e) => e.preventDefault()}
           className={cn(
-            'flex flex-col gap-0 p-0 overflow-hidden bg-background transition-all duration-300',
+            'flex flex-col gap-0 p-0 overflow-hidden bg-background transition-colors duration-300',
             aiDialogStep === 'preview'
               ? 'sm:max-w-4xl max-h-[90vh]'
               : 'sm:max-w-[600px]',
@@ -833,7 +833,7 @@ export default function QuizEditorPage() {
                                 <div
                                   key={oIndex}
                                   className={cn(
-                                    'flex items-center gap-3 p-3 rounded-lg border-2 transition-all',
+                                    'flex items-center gap-3 p-3 rounded-lg border-2 transition-colors',
                                     isCorrect
                                       ? 'border-green-500 bg-green-500/5'
                                       : 'border-border/50 hover:border-border',
@@ -1012,7 +1012,7 @@ function SortableQuestionItem({
 
   return (
     <div ref={setNodeRef} style={style} className="mb-6 group">
-      <Card className="premium-card border-border/40 hover:border-primary/30 shadow-sm hover:shadow-xl bg-card/60 backdrop-blur-sm transition-all duration-300">
+      <Card className="premium-card border-border/40 hover:border-primary/30 shadow-sm hover:shadow-xl bg-card/60 backdrop-blur-sm transition-colors duration-300">
         <CardHeader className="flex flex-row items-start justify-between py-5 px-6">
           <div className="flex gap-5">
             <div
@@ -1089,7 +1089,7 @@ function SortableQuestionItem({
                   <div
                     key={i}
                     className={cn(
-                      'p-4 rounded-xl border-2 text-sm font-medium transition-all flex items-center gap-3',
+                      'p-4 rounded-xl border-2 text-sm font-medium transition-colors flex items-center gap-3',
                       isSelectedCorrect
                         ? 'border-green-500 bg-green-500/5 text-green-700 shadow-sm'
                         : 'border-border/30 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/40',

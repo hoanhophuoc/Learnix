@@ -80,7 +80,7 @@ export function ProtectedRoute({
           </p>
           <Link
             to="/dashboard"
-            className="inline-flex items-center justify-center px-6 py-3 gradient-primary text-white rounded-xl font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
+            className="inline-flex items-center justify-center px-6 py-3 gradient-primary text-white rounded-xl font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-colors"
           >
             Go to Dashboard
           </Link>

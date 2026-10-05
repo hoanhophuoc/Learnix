@@ -1036,15 +1036,15 @@ function SortableSectionItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={cn('transition-all', isDragging && 'opacity-50')}
+      className={cn('transition-colors', isDragging && 'opacity-50')}
     >
-      <Card className="overflow-hidden border-border/40 hover:border-primary/30 transition-all duration-300 shadow-sm hover:shadow-md bg-card/50 backdrop-blur-sm">
+      <Card className="overflow-hidden border-border/40 hover:border-primary/30 transition-colors duration-300 shadow-sm hover:shadow-md bg-card/50 backdrop-blur-sm">
         <CardHeader className="py-4 px-6 bg-muted/30 border-b border-border/40 flex flex-row items-center justify-between space-y-0 select-none">
           <div className="flex items-center gap-4">
             <div
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-primary/10 rounded-md transition-all text-muted-foreground/50 hover:text-primary"
+              className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-primary/10 rounded-md transition-colors text-muted-foreground/50 hover:text-primary"
             >
               <GripVertical className="w-5 h-5" />
             </div>
@@ -1152,7 +1152,7 @@ function SortableLessonItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'transition-all',
+        'transition-colors',
         isDragging && 'opacity-30 bg-primary/5 shadow-inner scale-[0.98]',
       )}
     >
@@ -1183,7 +1183,7 @@ function LessonItem({
   const navigate = useNavigate();
 
   return (
-    <div className="group flex items-center justify-between py-3.5 px-6 hover:bg-primary/2 transition-all border-l-4 border-transparent hover:border-primary/60 relative overflow-hidden">
+    <div className="group flex items-center justify-between py-3.5 px-6 hover:bg-primary/2 transition-colors border-l-4 border-transparent hover:border-primary/60 relative overflow-hidden">
       <div className="flex items-center gap-4 flex-1 min-w-0 z-10">
         <div
           {...dragHandleProps}
@@ -1194,7 +1194,7 @@ function LessonItem({
         <div className="flex items-center gap-4 min-w-0">
           <div
             className={cn(
-              'w-10 h-10 rounded-xl shrink-0 flex items-center justify-center transition-all duration-300 shadow-sm group-hover:shadow-md',
+              'w-10 h-10 rounded-xl shrink-0 flex items-center justify-center transition-colors duration-300 shadow-sm group-hover:shadow-md',
               (() => {
                 if (lesson.type === 'quiz') {
                   return 'bg-orange-500/10 text-orange-600 border border-orange-200/50 group-hover:bg-orange-500 group-hover:text-white';
@@ -1255,7 +1255,7 @@ function LessonItem({
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 z-10">
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-colors duration-200 translate-x-2 group-hover:translate-x-0 z-10">
         {lesson.type === 'quiz' ? (
           <Button
             variant="ghost"
@@ -1861,7 +1861,7 @@ function AddLessonDialog({
                           }
                         }}
                         className={cn(
-                          'px-4 py-2 rounded-xl border text-sm font-bold transition-all duration-300 flex items-center gap-2 group',
+                          'px-4 py-2 rounded-xl border text-sm font-bold transition-colors duration-300 flex items-center gap-2 group',
                           selectedLanguages.includes(lang.id)
                             ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105'
                             : 'bg-background hover:bg-muted border-border text-muted-foreground hover:text-foreground',
@@ -2144,9 +2144,9 @@ function QuizCreationDialog({
           state: { title: manualTitle.trim() },
         },
       );
-      setIsSubmittingManual(false);
     } catch (_err: unknown) {
       toast.error('Unable to create quiz');
+    } finally {
       setIsSubmittingManual(false);
     }
   };
@@ -2209,7 +2209,7 @@ function QuizCreationDialog({
         </DialogTrigger>
         <DialogContent
           className={cn(
-            'sm:max-w-[500px] transition-all duration-300',
+            'sm:max-w-[500px] transition-colors duration-300',
             method !== 'choice' && 'sm:max-w-[400px]',
           )}
         >
@@ -2231,7 +2231,7 @@ function QuizCreationDialog({
               <button
                 type="button"
                 onClick={() => setMethod('manual')}
-                className="group premium-card flex flex-col items-center gap-4 p-6 rounded-2xl border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all text-center"
+                className="group premium-card flex flex-col items-center gap-4 p-6 rounded-2xl border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-colors text-center"
               >
                 <div className="p-3 rounded-xl bg-muted group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                   <Pencil className="w-8 h-8" />
@@ -2249,7 +2249,7 @@ function QuizCreationDialog({
               <button
                 type="button"
                 onClick={() => setMethod('ai')}
-                className="group premium-card flex flex-col items-center gap-4 p-6 rounded-2xl border-2 border-border/50 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all text-center"
+                className="group premium-card flex flex-col items-center gap-4 p-6 rounded-2xl border-2 border-border/50 hover:border-purple-500/50 hover:bg-purple-500/5 transition-colors text-center"
               >
                 <div className="p-3 rounded-xl bg-muted group-hover:bg-purple-500/10 group-hover:text-purple-600 transition-colors">
                   <BrainCircuit className="w-8 h-8" />

@@ -38,7 +38,7 @@ export function RegisterPage() {
         <Link to="/">
           <Button
             variant="ghost"
-            className="w-12 h-12 rounded-full bg-background/30 dark:bg-black/30 backdrop-blur-md border border-foreground/10 hover:bg-background/50 dark:hover:bg-white/10 hover:scale-110 transition-all duration-300 shadow-lg group p-0 flex items-center justify-center"
+            className="w-12 h-12 rounded-full bg-background/30 dark:bg-black/30 backdrop-blur-md border border-foreground/10 hover:bg-background/50 dark:hover:bg-white/10 hover:scale-110 transition-colors duration-300 shadow-lg group p-0 flex items-center justify-center"
           >
             <ChevronLeft
               className="w-6 h-6 text-foreground dark:text-white group-hover:-translate-x-1 transition-transform duration-300"
@@ -85,7 +85,7 @@ export function RegisterPage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleGoogleLogin}
-                className="flex items-center justify-center gap-2 py-2.5 px-4 bg-card border border-border rounded-xl hover:bg-accent hover:border-primary/30 transition-all duration-200 group"
+                className="flex items-center justify-center gap-2 py-2.5 px-4 bg-card border border-border rounded-xl hover:bg-accent hover:border-primary/30 transition-colors duration-200 group"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -112,7 +112,7 @@ export function RegisterPage() {
 
               <button
                 onClick={handleGithubLogin}
-                className="flex items-center justify-center gap-2 py-2.5 px-4 bg-card border border-border rounded-xl hover:bg-accent hover:border-primary/30 transition-all duration-200 group"
+                className="flex items-center justify-center gap-2 py-2.5 px-4 bg-card border border-border rounded-xl hover:bg-accent hover:border-primary/30 transition-colors duration-200 group"
               >
                 <svg
                   className="w-5 h-5"

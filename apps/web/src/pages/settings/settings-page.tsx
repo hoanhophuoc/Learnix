@@ -77,7 +77,7 @@ export function SettingsPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all',
+                'flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors',
                 activeTab === tab.id
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
@@ -164,7 +164,6 @@ function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
       await onUpdate();
       toast.success('Profile updated successfully');
       reset(data);
-      setIsSubmitting(false);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error && 'response' in error
@@ -175,6 +174,7 @@ function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
         errorMessage ??
           'Unable to update your profile. Please check your information and try again.',
       );
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -264,7 +264,7 @@ function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
               id="fullName"
               {...register('fullName')}
               type="text"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
               placeholder="Your full name"
             />
           </div>
@@ -329,7 +329,6 @@ function SecuritySection({ hasPassword }: SecuritySectionProps) {
       });
       toast.success('Password changed successfully');
       reset();
-      setIsSubmitting(false);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error && 'response' in error
@@ -340,6 +339,7 @@ function SecuritySection({ hasPassword }: SecuritySectionProps) {
         errorMessage ??
           'Unable to change your password. Please verify your current password and try again.',
       );
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -401,7 +401,7 @@ function SecuritySection({ hasPassword }: SecuritySectionProps) {
               id="currentPassword"
               {...register('currentPassword')}
               type={showCurrentPassword ? 'text' : 'password'}
-              className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+              className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
               placeholder="••••••••"
             />
             <button
@@ -438,7 +438,7 @@ function SecuritySection({ hasPassword }: SecuritySectionProps) {
               id="newPassword"
               {...register('newPassword')}
               type={showNewPassword ? 'text' : 'password'}
-              className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+              className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
               placeholder="••••••••"
             />
             <button
@@ -475,7 +475,7 @@ function SecuritySection({ hasPassword }: SecuritySectionProps) {
               id="confirmPassword"
               {...register('confirmPassword')}
               type={showConfirmPassword ? 'text' : 'password'}
-              className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+              className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
               placeholder="••••••••"
             />
             <button
@@ -551,7 +551,6 @@ function DangerZoneSection({ hasPassword, onDelete }: DangerZoneSectionProps) {
       });
       toast.success('Account deleted successfully');
       await onDelete();
-      setIsSubmitting(false);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error && 'response' in error
@@ -562,6 +561,7 @@ function DangerZoneSection({ hasPassword, onDelete }: DangerZoneSectionProps) {
         errorMessage ??
           'Unable to delete your account. Please try again or contact support if the problem persists.',
       );
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -610,7 +610,7 @@ function DangerZoneSection({ hasPassword, onDelete }: DangerZoneSectionProps) {
                       id="deletePassword"
                       {...register('password')}
                       type={showPassword ? 'text' : 'password'}
-                      className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/50 focus:border-destructive transition-all"
+                      className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/50 focus:border-destructive transition-colors"
                       placeholder="••••••••"
                     />
                     <button
@@ -647,7 +647,7 @@ function DangerZoneSection({ hasPassword, onDelete }: DangerZoneSectionProps) {
                   id="deleteConfirmation"
                   {...register('confirmation')}
                   type="text"
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/50 focus:border-destructive transition-all font-mono"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/50 focus:border-destructive transition-colors font-mono"
                   placeholder="DELETE"
                 />
                 {errors.confirmation && (

@@ -144,7 +144,7 @@ export function SystemStatsPage() {
             return (
               <Card
                 key={stat.label}
-                className="group hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                className="group hover:shadow-lg hover:shadow-primary/5 transition-colors duration-300 hover:-translate-y-1 overflow-hidden"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <CardContent className="p-6">

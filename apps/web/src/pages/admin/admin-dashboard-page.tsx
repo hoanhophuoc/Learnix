@@ -83,7 +83,7 @@ export function AdminDashboardPage() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="group hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
+          <Card className="group hover:shadow-lg hover:shadow-primary/5 transition-colors duration-300 hover:-translate-y-1">
             <CardContent className="p-6 flex items-center gap-4">
               <div className="p-3 rounded-xl bg-blue-500/10">
                 <Users className="w-6 h-6 text-blue-500" />
@@ -100,7 +100,7 @@ export function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="group hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
+          <Card className="group hover:shadow-lg hover:shadow-primary/5 transition-colors duration-300 hover:-translate-y-1">
             <CardContent className="p-6 flex items-center gap-4">
               <div className="p-3 rounded-xl bg-purple-500/10">
                 <BookOpen className="w-6 h-6 text-purple-500" />
@@ -117,7 +117,7 @@ export function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="group hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
+          <Card className="group hover:shadow-lg hover:shadow-primary/5 transition-colors duration-300 hover:-translate-y-1">
             <CardContent className="p-6 flex items-center gap-4">
               <div className="p-3 rounded-xl bg-orange-500/10">
                 <GraduationCap className="w-6 h-6 text-orange-500" />
@@ -171,7 +171,7 @@ export function AdminDashboardPage() {
 
               return (
                 <Link key={card.title} to={card.href}>
-                  <Card className="h-full group hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+                  <Card className="h-full group hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-colors duration-300 hover:-translate-y-1 cursor-pointer">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div
@@ -182,7 +182,7 @@ export function AdminDashboardPage() {
                         >
                           <Icon className={cn('w-6 h-6', card.iconColor)} />
                         </div>
-                        <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                        <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-colors" />
                       </div>
                       <CardTitle className="text-lg mt-4 group-hover:text-primary transition-colors">
                         {card.title}

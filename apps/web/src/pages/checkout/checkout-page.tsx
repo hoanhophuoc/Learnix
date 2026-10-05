@@ -468,7 +468,7 @@ export default function CheckoutPage() {
                 <div className="pt-4">
                   <Button
                     type="submit"
-                    className="w-full h-12 text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.01]"
+                    className="w-full h-12 text-base shadow-lg shadow-primary/20 transition-colors hover:scale-[1.01]"
                     size="lg"
                     disabled={isProcessing}
                   >

@@ -226,7 +226,7 @@ export function QuizPlayer({ quiz, onComplete }: QuizPlayerProps) {
                         handleAnswerChange(e.target.value)
                       }
                       placeholder="Type your answer here..."
-                      className="min-h-[120px] text-lg font-medium bg-muted/20 border-border/60 focus:bg-background transition-all rounded-xl p-4 resize-none"
+                      className="min-h-[120px] text-lg font-medium bg-muted/20 border-border/60 focus:bg-background transition-colors rounded-xl p-4 resize-none"
                       onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
                         const target = e.target as HTMLTextAreaElement;
                         target.style.height = 'auto';
@@ -267,7 +267,7 @@ export function QuizPlayer({ quiz, onComplete }: QuizPlayerProps) {
                           aria-checked={isChecked}
                           tabIndex={0}
                           className={cn(
-                            'flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer group hover:scale-[1.01]',
+                            'flex items-center gap-4 p-4 rounded-xl border-2 transition-colors cursor-pointer group hover:scale-[1.01]',
                             isChecked
                               ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10'
                               : 'border-border/60 bg-card hover:border-primary/50 hover:bg-muted/50',
@@ -311,7 +311,7 @@ export function QuizPlayer({ quiz, onComplete }: QuizPlayerProps) {
                       <label
                         key={index}
                         className={cn(
-                          'flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer group hover:scale-[1.01]',
+                          'flex items-center gap-4 p-4 rounded-xl border-2 transition-colors cursor-pointer group hover:scale-[1.01]',
                           isChecked
                             ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10'
                             : 'border-border/60 bg-card hover:border-primary/50 hover:bg-muted/50',
@@ -361,7 +361,7 @@ export function QuizPlayer({ quiz, onComplete }: QuizPlayerProps) {
           disabled={!hasAnswered || submitMutation.isPending}
           size="lg"
           className={cn(
-            'rounded-xl px-8 h-12 transition-all',
+            'rounded-xl px-8 h-12 transition-colors',
             currentQuestionIndex === questions.length - 1
               ? 'gradient-vivid text-white glow-vivid'
               : 'bg-primary',
@@ -500,7 +500,7 @@ function QuizResultView({
               <Card
                 key={question.id}
                 className={cn(
-                  'group relative overflow-hidden transition-all duration-300 border shadow-md',
+                  'group relative overflow-hidden transition-colors duration-300 border shadow-md',
                   isCorrect
                     ? 'border-green-500/30 bg-green-500/5'
                     : 'border-red-500/30 bg-red-500/5',
@@ -604,7 +604,7 @@ function QuizResultView({
                           <div
                             key={i}
                             className={cn(
-                              'p-4 rounded-2xl border-2 transition-all flex items-center justify-between',
+                              'p-4 rounded-2xl border-2 transition-colors flex items-center justify-between',
                               state === 'correct' &&
                                 'border-green-500/50 bg-green-500/10 text-green-900',
                               state === 'incorrect' &&

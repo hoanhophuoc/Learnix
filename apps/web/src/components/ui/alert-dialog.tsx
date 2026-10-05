@@ -105,7 +105,7 @@ const AlertDialogAction = React.forwardRef<
   <AlertDialogPrimitive.Action
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] gradient-primary text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:opacity-90 glow-primary h-10 px-4 text-sm',
+      'inline-flex items-center justify-center rounded-xl font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] gradient-primary text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:opacity-90 glow-primary h-10 px-4 text-sm',
       className,
     )}
     {...props}
@@ -120,7 +120,7 @@ const AlertDialogCancel = React.forwardRef<
   <AlertDialogPrimitive.Cancel
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] border border-border bg-transparent hover:bg-muted hover:border-primary/50 h-10 px-4 text-sm',
+      'inline-flex items-center justify-center rounded-xl font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] border border-border bg-transparent hover:bg-muted hover:border-primary/50 h-10 px-4 text-sm',
       'mt-2 sm:mt-0',
       className,
     )}

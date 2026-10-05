@@ -327,7 +327,7 @@ export function CoursesPage() {
                     to={`/courses/${course.id}`}
                     className="group block h-full"
                   >
-                    <Card className="h-full premium-card overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50 flex flex-col">
+                    <Card className="h-full premium-card overflow-hidden hover:shadow-lg transition-colors duration-300 border-border/50 flex flex-col">
                       <div className="h-48 bg-linear-to-br from-primary/5 to-primary/20 relative overflow-hidden">
                         {course.thumbnailUrl ? (
                           <img

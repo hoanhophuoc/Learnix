@@ -341,7 +341,7 @@ export function MarkdownEditor({
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-input bg-background focus-within:ring-1 focus-within:ring-ring transition-all shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-input bg-background focus-within:ring-1 focus-within:ring-ring transition-colors shadow-sm">
         <MenuBar editor={editor} onLinkClick={handleLinkClick} />
         <EditorContent editor={editor} placeholder={placeholder} />
       </div>

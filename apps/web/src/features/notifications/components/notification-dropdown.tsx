@@ -60,7 +60,7 @@ export function NotificationDropdown() {
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <button
-          className="relative p-2.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all focus:outline-none"
+          className="relative p-2.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
           aria-label="Notifications"
         >
           <Bell className="w-5 h-5" />

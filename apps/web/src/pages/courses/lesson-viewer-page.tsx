@@ -146,6 +146,11 @@ function CodeBlock({
   content: string;
   language?: string;
 }) {
+  const handleCopy = async (): Promise<void> => {
+    await navigator.clipboard.writeText(content);
+    toast.success('Code copied!');
+  };
+
   return (
     <div className="my-6 rounded-xl overflow-hidden border border-border bg-[#1e1e1e] text-white">
       <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/10">
@@ -155,9 +160,7 @@ function CodeBlock({
         </div>
         <button
           onClick={() => {
-            void navigator.clipboard.writeText(content).then(() => {
-              toast.success('Code copied!');
-            });
+            void handleCopy();
           }}
           className="text-xs hover:text-white transition-colors"
         >
@@ -353,7 +356,7 @@ function LessonContent({
 
   return (
     <div className="max-w-3xl mx-auto pb-4">
-      {blocks
+      {[...blocks]
         .sort((a, b) => a.orderIndex - b.orderIndex)
         .map((block) => {
           switch (block.type) {
@@ -854,7 +857,7 @@ export function LessonViewerPage() {
           >
             <div
               className={cn(
-                'max-w-4xl mx-auto p-6 md:p-10 w-full transition-all duration-300',
+                'max-w-4xl mx-auto p-6 md:p-10 w-full transition-colors duration-300',
                 currentLesson?.ideConfig &&
                   'overflow-y-auto h-full max-w-none p-6',
                 !isSidebarOpen && !currentLesson?.ideConfig && 'max-w-5xl', // Expand content width when sidebar is closed
@@ -949,7 +952,7 @@ export function LessonViewerPage() {
                     <div className="mt-6 mb-20 flex justify-end">
                       <Button
                         size="lg"
-                        className="gap-2 font-semibold shadow-xl hover:shadow-2xl transition-all"
+                        className="gap-2 font-semibold shadow-xl hover:shadow-2xl transition-colors"
                         onClick={() => {
                           const handleNavigation = () => {
                             if (nextLesson) {
@@ -1087,7 +1090,7 @@ export function LessonViewerPage() {
           {/* Sidebar Navigation - Fixed position with internal scroll like Udemy */}
           <div
             className={cn(
-              'w-80 bg-card border-l border-border flex flex-col shrink-0 transition-all duration-300',
+              'w-80 bg-card border-l border-border flex flex-col shrink-0 transition-colors duration-300',
               // Mobile: fixed overlay below header
               'fixed top-16 bottom-0 right-0 z-30',
               // Desktop: relative within flex container
@@ -1163,7 +1166,7 @@ export function LessonViewerPage() {
                             }}
                             disabled={isLocked && isAuthenticated}
                             className={cn(
-                              'w-full text-left px-4 py-3.5 flex items-start gap-3 transition-all border-l-[3px]',
+                              'w-full text-left px-4 py-3.5 flex items-start gap-3 transition-colors border-l-[3px]',
                               isActive
                                 ? 'bg-primary/5 border-primary'
                                 : 'border-transparent hover:bg-muted/50',

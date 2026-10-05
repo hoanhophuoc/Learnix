@@ -119,7 +119,7 @@ export function ResetPasswordPage() {
                       {...register('newPassword')}
                       id="newPassword"
                       type={showPassword ? 'text' : 'password'}
-                      className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+                      className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
                       placeholder="••••••••"
                     />
                     <button
@@ -156,7 +156,7 @@ export function ResetPasswordPage() {
                       {...register('confirmPassword')}
                       id="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
-                      className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+                      className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
                       placeholder="••••••••"
                     />
                     <button

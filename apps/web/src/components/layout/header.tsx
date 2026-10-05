@@ -410,7 +410,7 @@ export function Header() {
                   }
                 }}
                 placeholder="Search courses..."
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
               />
             </div>
             <button
@@ -486,7 +486,7 @@ export function Header() {
                     key={item.href}
                     to={item.href}
                     className={cn(
-                      'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover-highlight',
+                      'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover-highlight',
                       isActive(item.href)
                         ? 'bg-primary/10 text-primary'
                         : 'text-muted-foreground hover:text-foreground hover:bg-muted',
@@ -508,7 +508,7 @@ export function Header() {
                         key={item.href}
                         to={item.href}
                         className={cn(
-                          'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover-highlight',
+                          'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover-highlight',
                           isActive(item.href)
                             ? 'bg-primary/10 text-primary'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted',
@@ -527,7 +527,7 @@ export function Header() {
                 <div className="relative group/nav">
                   <button
                     className={cn(
-                      'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover-highlight',
+                      'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover-highlight',
                       isActive('/admin', true) ||
                         adminNavItems.some((item) =>
                           isActive(item.href, item.href === '/admin'),
@@ -574,7 +574,7 @@ export function Header() {
                 <div className="relative group/nav">
                   <button
                     className={cn(
-                      'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover-highlight',
+                      'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors hover-highlight',
                       instructorNavItems.some((item) => isActive(item.href))
                         ? 'bg-primary/10 text-primary'
                         : 'text-muted-foreground hover:text-foreground hover:bg-muted',
@@ -637,7 +637,7 @@ export function Header() {
                 onFocus={handleSearchFocus}
                 onKeyDown={handleKeyDown}
                 placeholder="Search courses..."
-                className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-all"
+                className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-border bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary focus:bg-background transition-colors"
               />
               {isSearching ? (
                 <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
@@ -783,7 +783,7 @@ export function Header() {
             {/* Mobile search button */}
             <button
               onClick={() => setIsMobileSearchOpen(true)}
-              className="md:hidden p-2.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+              className="md:hidden p-2.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
@@ -792,7 +792,7 @@ export function Header() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+              className="p-2.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Toggle theme"
             >
               {isDark ? (
@@ -813,7 +813,7 @@ export function Header() {
                 <div className="relative ml-2" ref={userMenuRef}>
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-muted transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     aria-label="User menu"
                     aria-expanded={isUserMenuOpen}
                     aria-haspopup="true"
@@ -1000,7 +1000,7 @@ export function Header() {
                     key={item.href}
                     to={item.href}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                      'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors',
                       isActive(item.href)
                         ? 'bg-primary/10 text-primary'
                         : 'text-muted-foreground hover:text-foreground hover:bg-muted',
@@ -1023,7 +1023,7 @@ export function Header() {
                         key={item.href}
                         to={item.href}
                         className={cn(
-                          'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                          'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors',
                           isActive(item.href)
                             ? 'bg-primary/10 text-primary'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted',
@@ -1043,7 +1043,7 @@ export function Header() {
                         key={item.href}
                         to={item.href}
                         className={cn(
-                          'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                          'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors',
                           isActive(item.href)
                             ? 'bg-primary/10 text-primary'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted',
@@ -1069,7 +1069,7 @@ export function Header() {
                             key={item.href}
                             to={item.href}
                             className={cn(
-                              'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                              'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors',
                               isActive(item.href)
                                 ? 'bg-primary/10 text-primary'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-muted',
@@ -1083,7 +1083,7 @@ export function Header() {
                       {/* ADDED: Create Course Button for Mobile */}
                       <Link
                         to="/instructor/courses/new"
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-muted-foreground hover:text-primary hover:bg-primary/5"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-muted-foreground hover:text-primary hover:bg-primary/5"
                       >
                         <Plus className="w-5 h-5" />
                         Create Course
@@ -1105,7 +1105,7 @@ export function Header() {
                             key={item.href}
                             to={item.href}
                             className={cn(
-                              'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                              'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors',
                               isActive(item.href)
                                 ? 'bg-primary/10 text-primary'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-muted',

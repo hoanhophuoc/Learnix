@@ -46,7 +46,7 @@ export function AuthRequiredModal({
           role="dialog"
           aria-modal="true"
           aria-labelledby="auth-modal-title"
-          className="relative bg-card w-full max-w-md rounded-2xl shadow-2xl border border-border overflow-hidden transform transition-all scale-100 pointer-events-auto"
+          className="relative bg-card w-full max-w-md rounded-2xl shadow-2xl border border-border overflow-hidden transform transition-colors scale-100 pointer-events-auto"
         >
           {/* Close Button */}
           <button

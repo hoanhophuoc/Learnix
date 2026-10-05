@@ -202,7 +202,7 @@ export function HomePage() {
             ].map((feature, index) => (
               <Card
                 key={index}
-                className="border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="border-none shadow-lg hover:shadow-xl transition-colors duration-300 hover:-translate-y-1"
               >
                 <CardContent className="p-8 text-center">
                   <div
@@ -246,7 +246,7 @@ export function HomePage() {
                 <button
                   key={tag}
                   onClick={() => void navigate(`/courses?tags=${tag}`)}
-                  className="px-6 py-3 rounded-full border border-border bg-card hover:bg-primary/5 hover:border-primary/50 hover:text-primary transition-all duration-300 font-medium capitalize shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                  className="px-6 py-3 rounded-full border border-border bg-card hover:bg-primary/5 hover:border-primary/50 hover:text-primary transition-colors duration-300 font-medium capitalize shadow-sm hover:shadow-md hover:-translate-y-0.5"
                 >
                   {tag}
                 </button>
@@ -268,7 +268,7 @@ export function HomePage() {
             </div>
             <Link
               to="/courses"
-              className="hidden md:flex items-center text-primary font-semibold hover:gap-2 transition-all group"
+              className="hidden md:flex items-center text-primary font-semibold hover:gap-2 transition-colors group"
             >
               View All Courses{' '}
               <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
@@ -289,7 +289,7 @@ export function HomePage() {
                     to={`/courses/${course.id}`}
                     className="group h-full"
                   >
-                    <Card className="h-full premium-card overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50 flex flex-col">
+                    <Card className="h-full premium-card overflow-hidden hover:shadow-lg transition-colors duration-300 border-border/50 flex flex-col">
                       <div className="h-48 bg-linear-to-br from-primary/5 to-primary/20 relative overflow-hidden">
                         {course.thumbnailUrl ? (
                           <img

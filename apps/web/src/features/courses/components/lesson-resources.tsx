@@ -143,6 +143,9 @@ export function LessonResources({
   const handleDownloadFile = async (resource: LessonResource) => {
     try {
       const response = await fetch(resource.url);
+      if (!response.ok) {
+        throw new Error(`Download failed with status ${response.status}`);
+      }
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -155,7 +158,7 @@ export function LessonResources({
       document.body.removeChild(a);
     } catch (_error) {
       // Fallback: open in new tab if download fails
-      window.open(resource.url, '_blank');
+      window.open(resource.url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -184,7 +187,7 @@ export function LessonResources({
         {resources.map((resource) => (
           <div
             key={resource.id}
-            className="group relative flex items-center justify-between p-4 rounded-xl border border-border/60 bg-card hover:border-primary/30 hover:shadow-sm hover:bg-muted/30 transition-all duration-300"
+            className="group relative flex items-center justify-between p-4 rounded-xl border border-border/60 bg-card hover:border-primary/30 hover:shadow-sm hover:bg-muted/30 transition-colors duration-300"
           >
             <a
               href={resource.url}
@@ -422,9 +425,9 @@ function AddResourceDialog({
       setUrl('');
       setSelectedFiles([]);
       setType('link');
-      setIsSubmitting(false);
     } catch (_error) {
       toast.error('Failed to add resource');
+    } finally {
       setIsSubmitting(false);
     }
   };

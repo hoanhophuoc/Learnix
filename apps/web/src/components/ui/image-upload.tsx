@@ -110,7 +110,6 @@ export function ImageUpload({
           revokePreviewUrl(previewUrl);
         }
         setPreviewUrl(null);
-        setIsUploading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed');
         // Revert preview on error
@@ -118,6 +117,7 @@ export function ImageUpload({
           revokePreviewUrl(preview);
         }
         setPreviewUrl(null);
+      } finally {
         setIsUploading(false);
       }
     },
@@ -195,7 +195,7 @@ export function ImageUpload({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          'relative flex items-center justify-center border-2 border-dashed transition-all cursor-pointer', // Removed overflow-hidden
+          'relative flex items-center justify-center border-2 border-dashed transition-colors cursor-pointer', // Removed overflow-hidden
           circular ? 'rounded-full' : 'rounded-xl', // Removed overflow-hidden to allow button to overlap
           isDragging
             ? 'border-primary bg-primary/5'

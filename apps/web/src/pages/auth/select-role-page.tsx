@@ -154,7 +154,7 @@ export function SelectRolePage() {
                 disabled={isSubmitting}
                 style={{ animationDelay: `${index * 150}ms` }}
                 className={cn(
-                  'relative group premium-card text-left p-6 rounded-2xl border-2 transition-all duration-300 overflow-hidden animate-fade-in',
+                  'relative group premium-card text-left p-6 rounded-2xl border-2 transition-colors duration-300 overflow-hidden animate-fade-in',
                   isSelected
                     ? 'border-primary bg-primary/5 shadow-2xl shadow-primary/20 scale-[1.03] ring-2 ring-primary/30 glow-primary'
                     : 'border-border bg-card/50 backdrop-blur-sm hover:border-primary/50 hover:bg-card hover:shadow-xl',
@@ -188,7 +188,7 @@ export function SelectRolePage() {
                   {/* Icon with enhanced animation */}
                   <div
                     className={cn(
-                      'w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 bg-linear-to-br shadow-md',
+                      'w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300 bg-linear-to-br shadow-md',
                       option.gradient,
                       isSelected
                         ? 'shadow-2xl shadow-primary/40 scale-110 animate-bounce'
@@ -223,7 +223,7 @@ export function SelectRolePage() {
                         >
                           <div
                             className={cn(
-                              'p-1.5 rounded-lg transition-all duration-300',
+                              'p-1.5 rounded-lg transition-colors duration-300',
                               isSelected
                                 ? 'bg-primary/20 text-primary shadow-md shadow-primary/20'
                                 : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary',
@@ -250,7 +250,7 @@ export function SelectRolePage() {
             onClick={() => void handleSelectRole()}
             disabled={!selectedRole || isSubmitting}
             className={cn(
-              'relative px-10 py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center gap-3 overflow-hidden group/btn',
+              'relative px-10 py-4 rounded-xl font-semibold text-lg transition-colors duration-300 flex items-center gap-3 overflow-hidden group/btn',
               selectedRole
                 ? 'gradient-primary text-white shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 hover:scale-[1.05] active:scale-[0.98] glow-primary'
                 : 'bg-muted text-muted-foreground cursor-not-allowed opacity-50',

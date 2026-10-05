@@ -87,7 +87,6 @@ export function VideoUpload({
           revokePreviewUrl(previewUrl);
         }
         setPreviewUrl(null);
-        setIsUploading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed');
         // Revert preview on error
@@ -95,6 +94,7 @@ export function VideoUpload({
           revokePreviewUrl(preview);
         }
         setPreviewUrl(null);
+      } finally {
         setIsUploading(false);
       }
     },
@@ -169,7 +169,7 @@ export function VideoUpload({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          'relative flex items-center justify-center border-2 border-dashed transition-all cursor-pointer rounded-xl min-h-[200px]',
+          'relative flex items-center justify-center border-2 border-dashed transition-colors cursor-pointer rounded-xl min-h-[200px]',
           isDragging
             ? 'border-primary bg-primary/5'
             : 'border-border hover:border-primary/50 hover:bg-muted/50',

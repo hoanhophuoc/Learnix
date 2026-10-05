@@ -442,7 +442,7 @@ function CourseCard({
   const isCompleted = course.status === 'completed';
 
   return (
-    <Card className="group premium-card overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+    <Card className="group premium-card overflow-hidden hover:shadow-lg transition-colors duration-300 hover:-translate-y-0.5">
       <CardContent className="p-0">
         <div className="flex flex-col md:flex-row">
           {/* Thumbnail */}

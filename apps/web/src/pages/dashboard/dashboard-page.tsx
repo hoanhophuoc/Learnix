@@ -218,7 +218,7 @@ export function DashboardPage() {
     <PageContainer>
       <div className="space-y-8 animate-fade-in">
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#6366f1] via-[#a855f7] to-[#ec4899] p-8 sm:p-10 text-white shadow-2xl transition-all duration-500 hover:shadow-primary/20">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#6366f1] via-[#a855f7] to-[#ec4899] p-8 sm:p-10 text-white shadow-2xl transition-colors duration-500 hover:shadow-primary/20">
           {/* Subtle decorative elements without washing out text */}
           <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 [clip-path:polygon(100%_0,0_0,100%_100%)]" />
           <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-2xl opacity-30" />
@@ -282,7 +282,7 @@ export function DashboardPage() {
               }
               if (continueLearningCourse) {
                 return (
-                  <Card className="group premium-card overflow-hidden hover:shadow-xl transition-all duration-300">
+                  <Card className="group premium-card overflow-hidden hover:shadow-xl transition-colors duration-300">
                     <div className="flex flex-col md:flex-row">
                       {/* Thumbnail */}
                       <Link
@@ -426,7 +426,7 @@ export function DashboardPage() {
                       }
                       className="group block h-full"
                     >
-                      <Card className="h-full premium-card overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50 flex flex-col">
+                      <Card className="h-full premium-card overflow-hidden hover:shadow-lg transition-colors duration-300 border-border/50 flex flex-col">
                         <div className="h-48 bg-linear-to-br from-primary/5 to-primary/20 relative overflow-hidden shrink-0">
                           {course.thumbnailUrl ? (
                             <img
@@ -549,7 +549,7 @@ export function DashboardPage() {
             return (
               <Card
                 key={card.title}
-                className="group premium-card hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1"
+                className="group premium-card hover:shadow-lg hover:shadow-primary/5 transition-colors duration-300 hover:-translate-y-1"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <CardContent className="p-6">

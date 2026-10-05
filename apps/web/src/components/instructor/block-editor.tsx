@@ -302,7 +302,7 @@ function SortableBlockItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group relative flex gap-4 p-4 border border-border rounded-xl bg-card transition-all',
+        'group relative flex gap-4 p-4 border border-border rounded-xl bg-card transition-colors',
         isDragging
           ? 'opacity-30 border-dashed border-primary ring-2 ring-primary/20 bg-muted/50'
           : 'hover:shadow-md hover:border-primary/30',
