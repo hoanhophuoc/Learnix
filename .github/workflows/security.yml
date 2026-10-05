@@ -41,6 +41,7 @@ jobs:
 
   codeql:
     name: CodeQL Analysis
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -136,6 +137,17 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: |
             ${{ runner.os }}-sonar
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Generate API coverage
+        run: pnpm --filter @repo/api exec cross-env NODE_OPTIONS='--experimental-vm-modules --localstorage-file=.jest-localstorage' jest --coverage --runInBand
+
+      - name: Require API coverage report
+        run: |
+          set -euo pipefail
+          test -s apps/coverage/lcov.info
 
       - name: Run Sonar analysis
         uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
