@@ -53,10 +53,19 @@ grep -Fq 'continue-on-error: true' "$workflow"
 grep -Fq 'name: Upload rollback diagnostics' "$workflow"
 grep -Fq 'if: always()' "$workflow"
 grep -Fq 'Provider rollback failed; inspect deployment-rollback-diagnostics.' "$workflow"
-grep -Fq "priority: \${{ needs.rollback.result == 'failure' && 'high' || 'normal' }}" "$workflow"
+grep -Fq "priority: \${{ needs.deploy.result != 'success' && needs.rollback.result != 'success' && 'high' || 'normal' }}" "$workflow"
 grep -Fq 'state == "READY"' "$workflow"
+grep -Fq '.target == "production"' "$workflow"
+grep -Fq 'createdAt | type == "string"' "$workflow"
 grep -Fq 'status == "live" or .status == "succeeded"' "$workflow"
+grep -Fq 'finishedAt | type == "string"' "$workflow"
 grep -Fq 'sha256:[a-f0-9]{64}' "$workflow"
+grep -Fq "rollback_unavailable" "$workflow"
+grep -Fq "needs.rollback.result != 'success'" "$workflow"
+if grep -Fq 'target // "production"' "$workflow" || grep -Fq 'finishedAt // .createdAt' "$workflow"; then
+  echo "previous-release capture still defaults missing metadata" >&2
+  exit 1
+fi
 if grep -Fq '.[0].uid' "$workflow" || grep -Fq 'deploys?limit=1"' "$workflow"; then
   echo "previous-release capture still uses an unverified first/latest provider result" >&2
   exit 1

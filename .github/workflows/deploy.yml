@@ -154,7 +154,7 @@ jobs:
           if [[ -z "$vercel" ]]; then
             vercel="$(
               npx --yes vercel@latest ls "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" --json |
-                jq -r '[.[] | select(.uid and .state == "READY" and ((.target // "production") == "production") and (.createdAt // .created // 0))] | sort_by(.createdAt // .created) | last | .uid // empty'
+                jq -r '[.[] | select(.uid and .state == "READY" and .target == "production" and (.createdAt | type == "string") and (.createdAt | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}")))] | sort_by(.createdAt) | last | .uid // empty'
             )"
             [[ -n "$vercel" ]] || {
               echo "::error::No verified prior Vercel production deployment was found (state READY with deployment metadata)."
@@ -166,7 +166,7 @@ jobs:
             render="$(curl --fail --silent --show-error --max-time 20 \
               -H "Authorization: Bearer $RENDER_API_KEY" \
               "$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID/deploys?limit=100" |
-              jq -r '[.[] | select((.status == "live" or .status == "succeeded") and ((.image.sha // "") | test("^sha256:[a-f0-9]{64}$")) and (.id // .deploy.id))] | sort_by(.finishedAt // .createdAt) | last | (.id // .deploy.id // empty)')"
+              jq -r '[.[] | select((.status == "live" or .status == "succeeded") and (.id | type == "string") and (.finishedAt | type == "string") and (.finishedAt | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}")) and ((.image.sha // "") | test("^sha256:[a-f0-9]{64}$")))] | sort_by(.finishedAt) | last | .id // empty')"
             [[ -n "$render" ]] || {
               echo "::error::No verified prior Render release was found (successful status with immutable image digest)."
               exit 1
@@ -287,16 +287,6 @@ jobs:
             echo "::error::Provider rollback failed; inspect deployment-rollback-diagnostics."
             exit 1
           fi
-      - name: Legacy rollback endpoint guard
-        if: false
-        run: |
-          curl --fail --silent --show-error --max-time 30 \
-            -X POST \
-            -H "Authorization: Bearer $RENDER_API_KEY" \
-            -H 'Content-Type: application/json' \
-            --data "{\"deployId\":\"$PREVIOUS_RENDER\"}" \
-            "$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID/rollback"
-
   notify:
     name: Notify deployment result
     needs: [deploy, rollback]
@@ -309,13 +299,13 @@ jobs:
       - name: Notify
         uses: ./.github/actions/notify
         with:
-          status: ${{ needs.rollback.result == 'failure' && 'rollback_failed' || (needs.deploy.result == 'success' && 'success' || 'failure') }}
+          status: ${{ needs.deploy.result == 'success' && 'success' || (needs.rollback.result == 'success' && 'failure' || (needs.rollback.result == 'failure' && 'rollback_failed' || 'rollback_unavailable')) }}
           environment: ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
           message: >-
-            ${{ needs.rollback.result == 'failure' && 'HIGH PRIORITY: deployment failed and provider rollback failed; inspect rollback diagnostics.' || (needs.deploy.result == 'success' && 'Deployment succeeded.' || 'Deployment failed; provider rollback completed.') }}
+            ${{ needs.deploy.result == 'success' && 'Deployment succeeded.' || (needs.rollback.result == 'success' && 'Deployment failed; provider rollback completed.' || (needs.rollback.result == 'failure' && 'HIGH PRIORITY: deployment failed and provider rollback failed; inspect rollback diagnostics.' || 'HIGH PRIORITY: deployment failed and rollback was unavailable; inspect workflow logs and diagnostics.')) }}
           provider-links: >-
             run=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }};
             frontend=${{ vars.FRONTEND_URL }};
             api=${{ vars.RENDER_API_URL }}
-          priority: ${{ needs.rollback.result == 'failure' && 'high' || 'normal' }}
+          priority: ${{ needs.deploy.result != 'success' && needs.rollback.result != 'success' && 'high' || 'normal' }}
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}

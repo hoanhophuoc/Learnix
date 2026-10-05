@@ -45,11 +45,17 @@ fix round as:
   final unconditional failure gate. The notification distinguishes completed
   rollback from rollback failure and adds a `priority` field.
 - Automatic previous-release capture no longer selects list index zero. Vercel
-  candidates must be production-targeted `READY` deployments with metadata;
-  Render candidates must be successful/live releases with an immutable
-  `sha256` image digest. If no candidate passes those filters, capture fails
-  before provider mutation. Manual dispatch identifiers remain accepted as
-  explicit rollback references.
+  candidates must explicitly declare the production target, `READY` state, a
+  verified creation timestamp, and a deployment UID; Render candidates must
+  have a successful/live status, deploy ID, verified completion timestamp, and
+  immutable `sha256` image digest. Candidates are sorted by verified
+  timestamps, never API order. If no candidate passes those filters, capture
+  fails before provider mutation. Manual dispatch identifiers remain accepted
+  as explicit rollback references.
+- Notification status now reports `rollback_unavailable` when rollback is
+  skipped or cancelled, and treats every non-success rollback result as high
+  priority with safe run/provider links; it no longer claims rollback
+  completed in those cases.
 
 ## Environment contract
 
