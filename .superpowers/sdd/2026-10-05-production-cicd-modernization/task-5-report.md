@@ -29,8 +29,8 @@ fix round as:
     uses the captured deployment UID; Render rollback uses the captured deploy
     ID through the documented service rollback API.
   - Failure/success notification path with safe repository, run, frontend, and
-      API links only. Rollback failure now emits `rollback_failed` with high
-      priority.
+    API links only. Rollback failure now emits `rollback_failed` with high
+    priority.
 - Extended `.github/actions/notify/action.yml` with optional safe provider
   links while preserving non-blocking webhook failure behavior.
 - Added `scripts/ci/validate-required-env.sh` for explicit required-value
