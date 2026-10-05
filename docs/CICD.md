@@ -126,7 +126,10 @@ Configure these **environment variables**:
 - `FRONTEND_URL`: deployed Vercel URL used for the frontend probe and
   environment link.
 - `RENDER_API_URL`: public Render API base URL used for the `/health` probe.
-- `VITE_API_URL`: public API URL embedded when Vercel builds the frontend.
+- `VITE_API_URL`: public API URL recorded for deployment validation. The
+  workflow maps this to `PUBLIC_VITE_API_URL` but does not inject it into the
+  Vercel build; configure the same `VITE_API_URL` value in the Vercel project
+  environment/build settings for each target environment.
 
 The Render service must already be an image-backed service configured for the
 same GHCR host/repository/image name. GHCR pull credentials belong in the
@@ -201,13 +204,28 @@ not roll back database migrations, external data, third-party side effects, or
 an unverified provider release. If capture, credentials, or provider access is
 missing, rollback is unavailable and the notification is high priority.
 
-For a manual provider rollback, dispatch the deployment workflow with the
-target environment and explicit `previous-vercel-deployment` and
-`previous-render-release` identifiers. Use the exact identifiers captured by
-the failed run or confirmed in the provider dashboards. Then rerun the API and
-frontend probes manually. If provider rollback fails, stop retrying blindly,
-page the release owner, preserve `deployment-rollback-diagnostics`, and use the
-provider dashboards for incident recovery.
+The deployment workflow has no rollback-only dispatch mode. Its
+`previous-vercel-deployment` and `previous-render-release` inputs only provide
+targets to the automatic rollback path if that deployment run later fails; a
+dispatch with those inputs still performs the normal CI check, image/deploy
+flow, and health probes.
+
+For a manual provider rollback, use the exact identifiers captured by the
+failed run or confirmed in the provider dashboards:
+
+1. In the Vercel project dashboard, open the known-good production deployment
+   and use **Promote to Production**. The equivalent CLI operation is
+   `vercel promote <deployment-uid> --token <token> --scope <org-id>`.
+2. In the Render service dashboard, choose the known-good deploy and use its
+   rollback action. For an API-based operation, call
+   `POST https://api.render.com/v1/services/<service-id>/rollback` with
+   `{"deployId":"<render-deploy-id>"}` and the Render API key.
+3. Rerun the API and frontend probes manually and record the provider
+   operation IDs and timestamps.
+
+If provider rollback fails, stop retrying blindly, page the release owner,
+preserve `deployment-rollback-diagnostics`, and use the provider dashboards for
+incident recovery.
 
 ## 4. Maintenance
 
