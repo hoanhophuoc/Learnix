@@ -11,12 +11,10 @@ inputs:
     description: Node.js version
     required: false
     default: '24'
-  pnpm-version:
-    description: pnpm version
-    required: false
   working-directory:
-    description: Working directory for the project
-    required: true
+    description: Working directory for the project (used for compatibility; the workspace root is installed)
+    required: false
+    default: .
 
 runs:
   using: composite
@@ -26,10 +24,21 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
 
+    - name: Resolve repository package manager
+      id: package-manager
+      shell: bash
+      run: |
+        set -euo pipefail
+        package_manager="$(node -p "require('./package.json').packageManager")"
+        case "$package_manager" in
+          pnpm@*) echo "version=${package_manager#pnpm@}" >> "$GITHUB_OUTPUT" ;;
+          *) echo "::error::The repository packageManager must use the pnpm@<version> format" >&2; exit 1 ;;
+        esac
+
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
       with:
-        version: ${{ inputs.pnpm-version }}
+        version: ${{ steps.package-manager.outputs.version }}
 
     - name: Get pnpm store directory
       id: pnpm-cache
@@ -40,11 +49,10 @@ runs:
       uses: actions/cache@v5
       with:
         path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-${{ inputs.working-directory }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', inputs.working-directory)) }}
+        key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: |
-          ${{ runner.os }}-pnpm-${{ inputs.working-directory }}-
+          ${{ runner.os }}-pnpm-
 
     - name: Install dependencies
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
       run: pnpm install --frozen-lockfile

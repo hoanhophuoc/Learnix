@@ -14,6 +14,12 @@ on:
       - 'apps/api/**'
       - 'packages/**'
       - 'e2e/**'
+      - 'database/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'turbo.json'
       - 'playwright.config.ts'
       - '.github/workflows/ci.yml'
       - '.github/workflows/reusable-ci.yml'
@@ -25,6 +31,12 @@ on:
       - 'apps/api/**'
       - 'packages/**'
       - 'e2e/**'
+      - 'database/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'turbo.json'
       - 'playwright.config.ts'
       - '.github/workflows/ci.yml'
       - '.github/workflows/reusable-ci.yml'
@@ -52,7 +64,6 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
         with:
           working-directory: .
-          node-version: '24'
 
       - name: Check formatting
         run: pnpm exec prettier --check .
@@ -78,6 +89,67 @@ jobs:
       project: apps/web
       filter: '@repo/web'
       test-command: pnpm test
+
+  react-doctor:
+    name: React Doctor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Run React Doctor
+        run: pnpm --filter @repo/web doctor
+
+  container:
+    name: Docker image validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Build API image
+        run: docker build --build-arg APP_NAME=api -t learnix-api:ci .
+
+      - name: Build web image
+        run: docker build --build-arg APP_NAME=web --build-arg VITE_API_URL=http://localhost:3000 -t learnix-web:ci .
+
+  compose-smoke:
+    name: Compose smoke test
+    runs-on: ubuntu-latest
+    needs: [container]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Start Compose stack and probe endpoints
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cleanup() {
+            status=$?
+            if [ "$status" -ne 0 ]; then
+              docker compose logs --no-color > compose-logs.txt || true
+            fi
+            docker compose down -v || true
+            exit "$status"
+          }
+          trap cleanup EXIT
+          docker compose up -d --build
+          docker compose ps --wait
+          curl --fail --retry 10 --retry-delay 3 http://localhost:3000/health
+          curl --fail --retry 10 --retry-delay 3 http://localhost:5173/
+
+      - name: Upload Compose logs
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: compose-logs
+          path: compose-logs.txt
+          if-no-files-found: ignore
+          retention-days: 7
 
   # ==========================
   # E2E Tests (Playwright)
@@ -181,7 +253,8 @@ jobs:
   ci-status:
     name: CI Status
     runs-on: ubuntu-latest
-    needs: [format, backend, frontend, e2e]
+    needs:
+      [format, backend, frontend, react-doctor, container, compose-smoke, e2e]
     if: always()
     steps:
       - name: Check CI status
@@ -189,6 +262,9 @@ jobs:
           if [[ "${{ needs.format.result }}" == "failure" ]] || \
              [[ "${{ needs.backend.result }}" == "failure" ]] || \
              [[ "${{ needs.frontend.result }}" == "failure" ]] || \
+             [[ "${{ needs.react-doctor.result }}" == "failure" ]] || \
+             [[ "${{ needs.container.result }}" == "failure" ]] || \
+             [[ "${{ needs.compose-smoke.result }}" == "failure" ]] || \
              [[ "${{ needs.e2e.result }}" == "failure" ]]; then
             echo "❌ CI failed"
             exit 1
