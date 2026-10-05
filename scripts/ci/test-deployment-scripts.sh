@@ -52,11 +52,11 @@ if "$health" --name fixture-timeout --url http://127.0.0.1:18991/slow --timeout 
 fi
 
 grep -Fq 'continue-on-error: true' "$workflow"
-grep -Fq "Authorization: ******" "$workflow"
 if grep -Fq "Authorization: ******" "$workflow"; then
   echo "Render requests still use a placeholder authorization value" >&2
   exit 1
 fi
+[[ "$(grep -Fc 'Authorization: Bearer $RENDER_API_KEY' "$workflow")" -eq 3 ]]
 grep -Fq 'actions: read' "$workflow"
 grep -Fq 'VERCEL_TARGET' "$workflow"
 grep -Fq 'alias set' "$workflow"
