@@ -1,8 +1,3 @@
-# ==============================================================================
-# Security Pipeline - Dependency Review & CodeQL
-# Runs on pull requests and weekly schedule
-# ==============================================================================
-
 name: Security
 
 on:
@@ -11,42 +6,46 @@ on:
   push:
     branches: [main, develop]
   schedule:
-    # Run weekly on Sundays at 00:00 UTC
     - cron: '0 0 * * 0'
   workflow_dispatch:
 
 permissions:
   contents: read
-  security-events: write
-  actions: read
 
 jobs:
-  # ===========================================================================
-  # Dependency Review (on PRs only)
-  # ===========================================================================
   dependency-review:
     name: Dependency Review
-    runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Dependency Review
+      - name: Review dependencies
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
           deny-licenses: GPL-3.0, AGPL-3.0
 
-  # ===========================================================================
-  # CodeQL Analysis
-  # NOTE: Requires GitHub Advanced Security for private repos
-  # Enable in: Settings → Security → Code security and analysis
-  # To enable for private repo: Set repository variable ENABLE_CODEQL=true
-  # ===========================================================================
+      - name: Summarize dependency review
+        if: always()
+        run: |
+          {
+            echo "## Dependency Review"
+            echo ""
+            echo "- Policy: fail on high, critical, or denied-license findings."
+            echo "- Result: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -54,63 +53,150 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          queries: +security-and-quality
+          queries: security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v4
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@v3
         with:
           category: '/language:${{ matrix.language }}'
 
-  # ===========================================================================
-  # npm Audit
-  # ===========================================================================
-  npm-audit:
-    name: npm Audit
+      - name: Summarize CodeQL
+        if: always()
+        run: |
+          {
+            echo "## CodeQL"
+            echo ""
+            echo "- Language: ${{ matrix.language }}"
+            echo "- Query suite: security-and-quality"
+            echo "- Result: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  pnpm-audit:
+    name: pnpm Audit
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project: [backend, frontend]
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.27.0
-
-      - name: Audit ${{ matrix.project }}
-        working-directory: ${{ matrix.project }}
+      - name: Audit workspace lockfile
         run: pnpm audit --audit-level=high
-        continue-on-error: true
 
-  # ===========================================================================
-  # Security Summary
-  # ===========================================================================
+      - name: Summarize pnpm audit
+        if: always()
+        run: |
+          {
+            echo "## pnpm Audit"
+            echo ""
+            echo "- Scope: workspace lockfile"
+            echo "- Policy: fail on high or critical vulnerabilities."
+            echo "- Result: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  sonar:
+    name: SonarQube/SonarCloud
+    if: vars.SONAR_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Require Sonar token
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$SONAR_TOKEN" ]]; then
+            echo "::error::SONAR_TOKEN is required when SONAR_ENABLED is true."
+            exit 1
+          fi
+
+      - name: Cache Sonar analyzer data
+        uses: actions/cache@v5
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: |
+            ${{ runner.os }}-sonar
+
+      - name: Run Sonar analysis
+        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Summarize Sonar analysis
+        if: always()
+        run: |
+          {
+            echo "## SonarQube/SonarCloud"
+            echo ""
+            echo "- Project: hoanhophuoc_Learnix"
+            echo "- Result: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   security-summary:
     name: Security Summary
-    runs-on: ubuntu-latest
-    needs: [codeql, npm-audit]
     if: always()
+    needs: [dependency-review, codeql, pnpm-audit, sonar]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - name: Summary
+      - name: Summarize security results
+        env:
+          DEPENDENCY_REVIEW_RESULT: ${{ needs.dependency-review.result }}
+          CODEQL_RESULT: ${{ needs.codeql.result }}
+          PNPM_AUDIT_RESULT: ${{ needs.pnpm-audit.result }}
+          SONAR_RESULT: ${{ needs.sonar.result }}
         run: |
-          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| CodeQL | ${{ needs.codeql.result == 'success' && '✅ Passed' || '⚠️ Check Results' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| npm Audit | ${{ needs.npm-audit.result == 'success' && '✅ Passed' || '⚠️ Check Results' }} |" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Security Scan Summary"
+            echo ""
+            echo "| Check | Status |"
+            echo "| --- | --- |"
+            echo "| Dependency review | $DEPENDENCY_REVIEW_RESULT |"
+            echo "| CodeQL | $CODEQL_RESULT |"
+            echo "| pnpm audit | $PNPM_AUDIT_RESULT |"
+            echo "| SonarQube/SonarCloud | $SONAR_RESULT |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  security-notification:
+    name: Security Failure Notification
+    if: always() && (needs.dependency-review.result == 'failure' || needs.codeql.result == 'failure' || needs.pnpm-audit.result == 'failure' || needs.sonar.result == 'failure')
+    needs: [dependency-review, codeql, pnpm-audit, sonar, security-summary]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SECURITY_NOTIFICATION_WEBHOOK: ${{ secrets.SECURITY_NOTIFICATION_WEBHOOK }}
+    steps:
+      - name: Notify security failure
+        if: env.SECURITY_NOTIFICATION_WEBHOOK != ''
+        uses: ./.github/actions/notify
+        with:
+          status: failure
+          environment: security
+          message: Security analysis failed; inspect the workflow summary and provider findings.
+          webhook-url: ${{ env.SECURITY_NOTIFICATION_WEBHOOK }}
+
+      - name: Explain skipped notification
+        if: env.SECURITY_NOTIFICATION_WEBHOOK == ''
+        run: echo "::warning::SECURITY_NOTIFICATION_WEBHOOK is not configured; no external notification was sent."
