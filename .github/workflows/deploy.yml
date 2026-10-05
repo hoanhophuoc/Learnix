@@ -1,0 +1,257 @@
+name: Protected deployment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'apps/api/**'
+      - 'packages/**'
+      - 'Dockerfile'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Protected environment to deploy
+        required: true
+        type: choice
+        options: [staging, production]
+      image-digest:
+        description: Existing immutable GHCR image digest (optional for a new build)
+        required: false
+        type: string
+      previous-vercel-deployment:
+        description: Explicit Vercel rollback deployment (required for manual rollback context)
+        required: false
+        type: string
+      previous-render-release:
+        description: Explicit Render rollback deploy/release identifier
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: learnix-deploy-${{ github.event.inputs.environment || 'staging' }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/learnix-api
+
+jobs:
+  required-checks:
+    name: Required CI checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful CI workflow
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ci.yml',
+              branch: context.ref.replace('refs/heads/', ''),
+              event: 'push',
+              per_page: 10
+            });
+            const run = runs.find((item) => item.head_sha === context.sha);
+            if (!run || run.conclusion !== 'success') {
+              core.setFailed(`CI has not passed for ${context.sha}.`);
+            }
+
+  publish:
+    name: Publish immutable API image
+    needs: required-checks
+    if: github.event_name == 'push' || github.event.inputs.image-digest == ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    outputs:
+      image-digest: ${{ steps.image.outputs.digest }}
+      image-reference: ${{ steps.reference.outputs.reference }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish
+        id: image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          build-args: APP_NAME=api
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          provenance: true
+          sbom: true
+      - name: Export immutable image reference
+        id: reference
+        run: echo "reference=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.image.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
+    needs: [required-checks, publish]
+    if: always() && needs.required-checks.result == 'success' && (needs.publish.result == 'success' || needs.publish.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
+      url: ${{ vars.FRONTEND_URL }}
+    outputs:
+      previous-vercel: ${{ steps.capture.outputs.vercel }}
+      previous-render: ${{ steps.capture.outputs.render }}
+      vercel-deployment: ${{ steps.vercel.outputs.deployment }}
+      render-release: ${{ steps.render.outputs.release }}
+    env:
+      DEPLOY_ENVIRONMENT: ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
+      IMAGE_DIGEST_INPUT: ${{ inputs.image-digest || github.event.inputs.image-digest }}
+      PREVIOUS_VERCEL_INPUT: ${{ inputs.previous-vercel-deployment || github.event.inputs.previous-vercel-deployment }}
+      PREVIOUS_RENDER_INPUT: ${{ inputs.previous-render-release || github.event.inputs.previous-render-release }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      RENDER_API_URL: ${{ vars.RENDER_API_URL }}
+      RENDER_PROVIDER_API_URL: https://api.render.com
+      RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      PUBLIC_VITE_API_URL: ${{ vars.VITE_API_URL }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate deployment inputs
+        run: |
+          scripts/ci/validate-required-env.sh \
+            VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_FRONTEND_URL \
+            RENDER_API_KEY RENDER_SERVICE_ID RENDER_API_URL DISCORD_WEBHOOK \
+            PUBLIC_VITE_API_URL
+      - name: Resolve image digest
+        id: image
+        env:
+          PUBLISHED_DIGEST: ${{ needs.publish.outputs.image-digest }}
+        run: |
+          set -euo pipefail
+          digest="${IMAGE_DIGEST_INPUT:-$PUBLISHED_DIGEST}"
+          [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "::error::An immutable sha256 image digest is required."; exit 1; }
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+      - name: Capture previous provider releases
+        id: capture
+        run: |
+          set -euo pipefail
+          vercel="$PREVIOUS_VERCEL_INPUT"
+          if [[ -z "$vercel" ]]; then
+            vercel="$(npx --yes vercel@latest ls "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" --json | jq -r '.[0].uid // empty')"
+          fi
+          render="$PREVIOUS_RENDER_INPUT"
+          if [[ -z "$render" ]]; then
+            render="$(curl --fail --silent --show-error --max-time 20 \
+              -H "Authorization: Bearer $RENDER_API_KEY" \
+              "$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID/deploys?limit=1" | jq -r '.[0].deploy.id // .[0].id // empty')"
+          fi
+          [[ -n "$vercel" && "$vercel" != "null" ]] || { echo "::error::Could not capture previous Vercel deployment."; exit 1; }
+          [[ -n "$render" && "$render" != "null" ]] || { echo "::error::Could not capture previous Render release."; exit 1; }
+          {
+            echo "vercel=$vercel"
+            echo "render=$render"
+          } >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$vercel" > vercel-previous-release.txt
+          printf '%s\n' "$render" > render-previous-release.txt
+      - name: Deploy frontend to Vercel
+        id: vercel
+        run: |
+          set -euo pipefail
+          deployment="$(npx --yes vercel@latest deploy apps/web --prod --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID" --yes)"
+          [[ "$deployment" =~ https?:// ]] || { echo "::error::Vercel did not return a deployment URL."; exit 1; }
+          uid="$(npx --yes vercel@latest inspect "$deployment" --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID" --json | jq -r '.uid // empty')"
+          [[ -n "$uid" ]] || { echo "::error::Vercel deployment identifier was not returned."; exit 1; }
+          echo "deployment=$uid" >> "$GITHUB_OUTPUT"
+      - name: Deploy API image to Render
+        id: render
+        run: |
+          set -euo pipefail
+          response="$(curl --fail --silent --show-error --max-time 30 \
+            -X POST \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H 'Content-Type: application/json' \
+            --data "{\"clearCache\":\"do_not_clear\",\"imageUrl\":\"$REGISTRY/$IMAGE_NAME@${{ steps.image.outputs.digest }}\"}" \
+            "$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID/deploys")"
+          release="$(jq -r '.deploy.id // .id // empty' <<<"$response")"
+          [[ -n "$release" ]] || { echo "::error::Render did not return a release identifier."; exit 1; }
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+      - name: Probe API
+        run: scripts/ci/check-deployment-health.sh --name api --url "$RENDER_API_URL/health" --expected OK
+      - name: Probe frontend
+        run: scripts/ci/check-deployment-health.sh --name frontend --url "$VERCEL_FRONTEND_URL/"
+      - name: Save release capture
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: deployment-release-identifiers
+          path: '*-previous-release.txt'
+          retention-days: 14
+
+  rollback:
+    name: Roll back failed deployment
+    needs: deploy
+    if: always() && needs.deploy.result == 'failure'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
+    permissions:
+      contents: read
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      PREVIOUS_VERCEL: ${{ needs.deploy.outputs.previous-vercel }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      RENDER_PROVIDER_API_URL: https://api.render.com
+      RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+      PREVIOUS_RENDER: ${{ needs.deploy.outputs.previous-render }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate rollback identifiers
+        run: scripts/ci/validate-required-env.sh PREVIOUS_VERCEL PREVIOUS_RENDER
+      - name: Roll back Vercel
+        run: npx --yes vercel@latest promote "$PREVIOUS_VERCEL" --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"
+      - name: Roll back Render
+        run: |
+          curl --fail --silent --show-error --max-time 30 \
+            -X POST \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H 'Content-Type: application/json' \
+            --data "{\"deployId\":\"$PREVIOUS_RENDER\"}" \
+            "$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID/rollback"
+
+  notify:
+    name: Notify deployment result
+    needs: [deploy, rollback]
+    if: always()
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
+    permissions:
+      contents: read
+    steps:
+      - name: Notify
+        uses: ./.github/actions/notify
+        with:
+          status: ${{ needs.deploy.result == 'success' && 'success' || 'failure' }}
+          environment: ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
+          message: >-
+            Deployment ${{ needs.deploy.result == 'success' && 'succeeded' || 'failed' }}.
+            Rollback result: ${{ needs.rollback.result }}.
+          provider-links: >-
+            run=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }};
+            frontend=${{ vars.FRONTEND_URL }};
+            api=${{ vars.RENDER_API_URL }}
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}

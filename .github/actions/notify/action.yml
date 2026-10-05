@@ -14,6 +14,10 @@ inputs:
   webhook-url:
     description: Notification webhook URL
     required: true
+  provider-links:
+    description: Safe provider links or identifiers
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -25,6 +29,7 @@ runs:
         NOTIFICATION_ENVIRONMENT: ${{ inputs.environment }}
         NOTIFICATION_MESSAGE: ${{ inputs.message }}
         NOTIFICATION_WEBHOOK_URL: ${{ inputs.webhook-url }}
+        NOTIFICATION_PROVIDER_LINKS: ${{ inputs.provider-links }}
       run: |
         set -euo pipefail
         payload="$(jq -n \
@@ -34,7 +39,8 @@ runs:
           --arg environment "$NOTIFICATION_ENVIRONMENT" \
           --arg status "$NOTIFICATION_STATUS" \
           --arg message "$NOTIFICATION_MESSAGE" \
-          '{repository: $repository, commit: $commit, workflow_run_url: $run_url, environment: $environment, result: $status, message: $message}')"
+          --arg provider_links "$NOTIFICATION_PROVIDER_LINKS" \
+          '{repository: $repository, commit: $commit, workflow_run_url: $run_url, environment: $environment, result: $status, message: $message, provider_links: $provider_links}')"
         if ! curl --fail --silent --show-error --max-time 10 \
           -X POST \
           -H 'Content-Type: application/json' \
