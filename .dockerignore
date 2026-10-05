@@ -7,4 +7,5 @@ coverage
 test-results
 *.log
 .env
+**/.env
 .DS_Store

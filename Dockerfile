@@ -8,20 +8,20 @@ FROM base AS builder
 RUN apk add --no-cache libc6-compat
 # Set working directory
 WORKDIR /app
-RUN npm install -g turbo
+RUN npm install -g turbo@2.11.7 pnpm@12.9.1
 COPY . .
 RUN turbo prune @repo/web @repo/api --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
 RUN apk add --no-cache libc6-compat
+RUN npm install -g pnpm@12.9.1
 WORKDIR /app
 
 # First install dependencies (as they change less often)
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
-RUN npm install -g pnpm
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # Build the project and its dependencies
 COPY --from=builder /app/out/full/ .
@@ -36,28 +36,42 @@ ENV VITE_API_URL=${VITE_API_URL}
 
 # Check if build script is defined, if not, try to build with turbo
 RUN npx turbo build --filter=@repo/${APP_NAME}...
+RUN pnpm deploy --filter=@repo/${APP_NAME} --prod /app/runtime
+RUN if [ "$APP_NAME" = "web" ]; then \
+  cp -R apps/web/dist /app/runtime/dist; \
+  else \
+  cp -R apps/api/dist /app/runtime/dist; \
+  fi
 
 FROM base AS runner
 WORKDIR /app
+ARG APP_NAME=web
+ENV APP_NAME=${APP_NAME}
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=installer --chown=nextjs:nodejs /app .
-COPY --chown=nextjs:nodejs database ./database
+COPY --from=installer --chown=nextjs:nodejs /app/runtime/node_modules ./node_modules
+COPY --from=installer --chown=nextjs:nodejs /app/runtime/dist ./dist
+RUN mkdir -p uploads && chown nextjs:nodejs uploads
 
-# Install serve globally for static site serving (web) and pnpm for dev scripts
-RUN npm install -g serve pnpm
+RUN printf '%s\n' \
+  '#!/bin/sh' \
+  'set -eu' \
+  'if [ "$APP_NAME" = "web" ]; then' \
+  '  exec serve -s dist -l 3000' \
+  'fi' \
+  'exec node dist/main.js' \
+  > /usr/local/bin/learnix-start \
+  && chmod +x /usr/local/bin/learnix-start
+
+# Install only the static file server needed by the web runtime.
+RUN if [ "$APP_NAME" = "web" ]; then npm install -g serve@14.2.4; fi
 
 USER nextjs
+ENV NODE_ENV=production
 
-# Expose port (default 3000)
 EXPOSE 3000
 
-# Start command depends on APP_NAME
-CMD if [ "$APP_NAME" = "web" ]; then \
-  serve -s apps/web/dist -l 3000; \
-  else \
-  node apps/api/dist/main.js; \
-  fi
+ENTRYPOINT ["/usr/local/bin/learnix-start"]
