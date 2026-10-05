@@ -9,15 +9,13 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [
     react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler']],
-      },
+      compiler: true,
     }),
     tailwindcss(),
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   build: {
@@ -36,32 +34,42 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Manual chunk splitting for better caching
-        manualChunks: {
-          // Vendor chunks - rarely change, cache well
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'query-vendor': ['@tanstack/react-query'],
-          'ui-vendor': [
-            '@radix-ui/react-avatar',
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-separator',
-            '@radix-ui/react-slot',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-tooltip',
-          ],
-          'editor-vendor': [
-            '@tiptap/react',
-            '@tiptap/starter-kit',
-            '@tiptap/extension-link',
-            'tiptap-markdown',
-          ],
-          'dnd-vendor': [
-            '@dnd-kit/core',
-            '@dnd-kit/sortable',
-            '@dnd-kit/utilities',
-          ],
-          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          utils: ['clsx', 'tailwind-merge'],
+        manualChunks(id: string) {
+          if (
+            id.includes('/node_modules/react/') ||
+            id.includes('/node_modules/react-dom/') ||
+            id.includes('/node_modules/react-router-dom/')
+          ) {
+            return 'react-vendor';
+          }
+          if (id.includes('/node_modules/@tanstack/react-query/')) {
+            return 'query-vendor';
+          }
+          if (id.includes('/node_modules/@radix-ui/')) {
+            return 'ui-vendor';
+          }
+          if (
+            id.includes('/node_modules/@tiptap/') ||
+            id.includes('/node_modules/tiptap-markdown/')
+          ) {
+            return 'editor-vendor';
+          }
+          if (id.includes('/node_modules/@dnd-kit/')) {
+            return 'dnd-vendor';
+          }
+          if (
+            id.includes('/node_modules/react-hook-form/') ||
+            id.includes('/node_modules/@hookform/resolvers/') ||
+            id.includes('/node_modules/zod/')
+          ) {
+            return 'form-vendor';
+          }
+          if (
+            id.includes('/node_modules/clsx/') ||
+            id.includes('/node_modules/tailwind-merge/')
+          ) {
+            return 'utils';
+          }
         },
         // Optimize chunk file names for caching
         chunkFileNames: 'assets/js/[name]-[hash].js',

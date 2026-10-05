@@ -221,7 +221,7 @@ export class CoursesService {
   async enroll(userId: string, courseId: string): Promise<Enrollment> {
     // Check if course exists and is accessible
     // Passing generic user object to allow enrollment only if visible
-    const course = await this.findOne(courseId, { id: userId } as User);
+    const course = await this.findOne(courseId, { id: userId });
 
     // Check for self-enrollment is REMOVED to allow instructors to check their own courses as students
     // if (course.instructor?.id === userId) {
@@ -716,7 +716,7 @@ export class CoursesService {
     const course = await this.findOne(id, {
       id: instructorId,
       role: UserRole.INSTRUCTOR,
-    } as User);
+    });
     if (course.instructorId !== instructorId) {
       throw new ForbiddenException('You can only update your own courses');
     }
@@ -728,7 +728,7 @@ export class CoursesService {
     const course = await this.findOne(id, {
       id: instructorId,
       role: UserRole.INSTRUCTOR,
-    } as User);
+    });
 
     if (course.instructorId !== instructorId) {
       throw new ForbiddenException('You can only unpublish your own courses');
@@ -748,7 +748,7 @@ export class CoursesService {
     const course = await this.findOne(id, {
       id: instructorId,
       role: UserRole.INSTRUCTOR,
-    } as User);
+    });
     if (course.instructorId !== instructorId) {
       throw new ForbiddenException('You can only delete your own courses');
     }
@@ -773,7 +773,7 @@ export class CoursesService {
     const course = await this.findOne(courseId, {
       id: instructorId,
       role: UserRole.INSTRUCTOR,
-    } as User);
+    });
     if (course.instructorId !== instructorId) {
       throw new ForbiddenException(
         'You can only add sections to your own courses',

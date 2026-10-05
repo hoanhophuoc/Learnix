@@ -302,7 +302,7 @@ describe('CoursesController', () => {
           score: 1,
         },
       ];
-      service.getRecommendations.mockResolvedValue(mockRecommendations as any);
+      service.getRecommendations.mockResolvedValue(mockRecommendations);
 
       const result = await controller.getRecommendations(mockUser, 6);
 

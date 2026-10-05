@@ -36,6 +36,7 @@ describe('UploadController', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockCloudinaryService.isAvailable.mockReturnValue(false);
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UploadController],
@@ -47,6 +48,11 @@ describe('UploadController', () => {
     }).compile();
 
     controller = module.get<UploadController>(UploadController);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    mockCloudinaryService.isAvailable.mockReturnValue(false);
   });
 
   const mockFile = {

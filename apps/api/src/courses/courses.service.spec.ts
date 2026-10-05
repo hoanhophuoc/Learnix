@@ -123,6 +123,7 @@ describe('CoursesService', () => {
   });
 
   const mockQueryBuilder = {
+    select: jest.fn().mockReturnThis(),
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     loadRelationCountAndMap: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
@@ -146,6 +147,18 @@ describe('CoursesService', () => {
   };
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+    mockCourseRepository.createQueryBuilder.mockImplementation(
+      () => mockQueryBuilder,
+    );
+    mockEnrollmentRepositoryValue.findOne.mockResolvedValue(null);
+    mockEnrollmentRepositoryValue.find.mockResolvedValue([]);
+    mockCourseRepository.findOne.mockResolvedValue(null);
+    mockCourseRepository.find.mockResolvedValue([]);
+    mockLessonRepositoryValue.findOne.mockResolvedValue(null);
+    mockCourseSectionRepositoryValue.findOne.mockResolvedValue(null);
+    mockResourceRepositoryValue.findOne.mockResolvedValue(null);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CoursesService,
@@ -200,6 +213,10 @@ describe('CoursesService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    mockCourseRepository.createQueryBuilder.mockImplementation(
+      () => mockQueryBuilder,
+    );
+    mockEnrollmentRepositoryValue.findOne.mockResolvedValue(null);
   });
 
   describe('getRecommendations', () => {
@@ -340,14 +357,18 @@ describe('CoursesService', () => {
 
   describe('findAllPublished', () => {
     const paginatedQueryBuilder = {
+      select: jest.fn().mockReturnThis(),
       leftJoinAndSelect: jest.fn().mockReturnThis(),
       loadRelationCountAndMap: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       andWhere: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       take: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
       getManyAndCount: jest.fn(),
+      getOne: jest.fn(),
     };
 
     beforeEach(() => {
@@ -433,11 +454,17 @@ describe('CoursesService', () => {
 
   describe('findOne', () => {
     const singleQueryBuilder = {
+      select: jest.fn().mockReturnThis(),
       leftJoinAndSelect: jest.fn().mockReturnThis(),
       loadRelationCountAndMap: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
       addOrderBy: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
+      getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
       getOne: jest.fn(),
     };
 
@@ -488,7 +515,7 @@ describe('CoursesService', () => {
 
       const result = await service.findOne('course-1', {
         id: 'instructor-1',
-      } as any);
+      });
 
       expect(result).toEqual(course);
     });
@@ -506,11 +533,17 @@ describe('CoursesService', () => {
 
   describe('enroll', () => {
     const singleQueryBuilder = {
+      select: jest.fn().mockReturnThis(),
       leftJoinAndSelect: jest.fn().mockReturnThis(),
       loadRelationCountAndMap: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
       addOrderBy: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
+      getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
       getOne: jest.fn(),
     };
 

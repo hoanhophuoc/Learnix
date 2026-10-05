@@ -392,7 +392,7 @@ export class AuthController {
     } = updatedUser;
     return {
       message: 'Successfully promoted to Instructor. Please return to the app.',
-      user: safeUser as SafeUser,
+      user: safeUser,
     };
   }
 }

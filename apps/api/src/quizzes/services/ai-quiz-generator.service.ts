@@ -210,7 +210,7 @@ Requirements:
 
         const status =
           typeof error === 'object' && error !== null && 'status' in error
-            ? (error as { status: unknown }).status
+            ? error.status
             : undefined;
 
         const errorMessage =

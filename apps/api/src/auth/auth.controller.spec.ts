@@ -250,7 +250,7 @@ describe('AuthController', () => {
         cookie: jest.fn(),
       } as any;
 
-      authService.updateUserRole.mockResolvedValue(updatedUser as User);
+      authService.updateUserRole.mockResolvedValue(updatedUser);
       authService.signToken = jest.fn().mockReturnValue(mockToken);
 
       const result = await controller.selectRole(mockResponse, mockUser, {
@@ -339,7 +339,7 @@ describe('AuthController', () => {
   describe('updateProfile', () => {
     it('should update user profile', async () => {
       const updatedUser = { ...mockUser, fullName: 'Updated Name' };
-      authService.updateProfile.mockResolvedValue(updatedUser as User);
+      authService.updateProfile.mockResolvedValue(updatedUser);
 
       const result = await controller.updateProfile(mockUser, {
         fullName: 'Updated Name',

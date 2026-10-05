@@ -3,5 +3,9 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "sonarlint.connectedMode.project": {
+    "connectionId": "hoanhophuoc",
+    "projectKey": "hoanhophuoc_Learnix"
+  }
 }

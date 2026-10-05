@@ -67,7 +67,7 @@ Build the core technical foundation of Learnix, including authentication, author
 
     > **Team member:** Frontend dev
 
-## **Total time:** _16**–**22 hours_
+## **Total time:** _16\**–*\*22 hours_
 
 ---
 
@@ -208,7 +208,7 @@ Build admin control and “highlight features”: AI-generated quizzes, and trac
   - Approve → quiz saved.
     > **Team member:** Frontend + Backend
 
-## **Total time:** ~_30**–**34 hours_
+## **Total time:** ~_30\**–*\*34 hours_
 
 ---
 

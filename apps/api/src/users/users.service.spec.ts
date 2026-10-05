@@ -159,7 +159,7 @@ describe('UsersService', () => {
     });
 
     it('should throw ConflictException for duplicate email', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
 
       await expect(
         service.create({
@@ -207,7 +207,7 @@ describe('UsersService', () => {
 
   describe('findByEmail', () => {
     it('should return user when found', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
 
       const result = await service.findByEmail('test@example.com');
 
@@ -229,7 +229,7 @@ describe('UsersService', () => {
 
   describe('findOne', () => {
     it('should return user by id', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
 
       const result = await service.findOne('user-1');
 
@@ -266,7 +266,7 @@ describe('UsersService', () => {
 
   describe('findByActivationToken', () => {
     it('should find user by activation token using query builder', async () => {
-      mockQueryBuilder.getOne.mockResolvedValue(mockUser as User);
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
 
       const result = await service.findByActivationToken('valid-token');
 
@@ -283,11 +283,11 @@ describe('UsersService', () => {
 
   describe('activateUser', () => {
     it('should activate user and set expiry grace period', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
       repository.save.mockResolvedValue({
         ...mockUser,
         isEmailVerified: true,
-      } as User);
+      });
 
       const result = await service.activateUser('user-1');
 
@@ -306,11 +306,11 @@ describe('UsersService', () => {
 
   describe('regenerateActivationToken', () => {
     it('should generate new activation token', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
       repository.save.mockResolvedValue({
         ...mockUser,
         activationToken: 'new-token',
-      } as User);
+      });
 
       const result = await service.regenerateActivationToken('user-1');
 
@@ -329,11 +329,11 @@ describe('UsersService', () => {
 
   describe('updateRole', () => {
     it('should update user role', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
       repository.save.mockResolvedValue({
         ...mockUser,
         role: UserRole.INSTRUCTOR,
-      } as User);
+      });
 
       const result = await service.updateRole('user-1', UserRole.INSTRUCTOR);
 
@@ -355,11 +355,11 @@ describe('UsersService', () => {
 
   describe('updateStatus', () => {
     it('should update user active status', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
       repository.save.mockResolvedValue({
         ...mockUser,
         isActive: false,
-      } as User);
+      });
 
       const result = await service.updateStatus('user-1', false);
 
@@ -387,7 +387,7 @@ describe('UsersService', () => {
 
   describe('createPasswordResetToken', () => {
     it('should create password reset token', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
       mockQueryBuilder.execute.mockResolvedValue({});
 
       const result = await service.createPasswordResetToken('user-1');
@@ -413,7 +413,7 @@ describe('UsersService', () => {
 
   describe('findByPasswordResetToken', () => {
     it('should find user by password reset token', async () => {
-      mockQueryBuilder.getOne.mockResolvedValue(mockUser as User);
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
 
       const result = await service.findByPasswordResetToken('reset-token');
 
@@ -426,7 +426,7 @@ describe('UsersService', () => {
 
   describe('resetPassword', () => {
     it('should reset password and clear reset token', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
       mockedBcrypt.hash.mockResolvedValue('newHashedPassword');
       mockQueryBuilder.execute.mockResolvedValue({});
 
@@ -454,7 +454,7 @@ describe('UsersService', () => {
 
   describe('changePassword', () => {
     it('should change password when current password is correct', async () => {
-      mockQueryBuilder.getOne.mockResolvedValue(mockUser as User);
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
       mockedBcrypt.compare.mockResolvedValue(true);
       mockedBcrypt.hash.mockResolvedValue('newHashedPassword');
       mockQueryBuilder.execute.mockResolvedValue({});
@@ -485,7 +485,7 @@ describe('UsersService', () => {
       mockQueryBuilder.getOne.mockResolvedValue({
         ...mockUser,
         password: null,
-      } as User);
+      });
 
       await expect(
         service.changePassword('user-1', 'current', 'new'),
@@ -493,7 +493,7 @@ describe('UsersService', () => {
     });
 
     it('should throw BadRequestException for incorrect current password', async () => {
-      mockQueryBuilder.getOne.mockResolvedValue(mockUser as User);
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
       mockedBcrypt.compare.mockResolvedValue(false);
 
       await expect(
@@ -504,11 +504,11 @@ describe('UsersService', () => {
 
   describe('updateProfile', () => {
     it('should update fullName', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
       repository.save.mockResolvedValue({
         ...mockUser,
         fullName: 'Updated Name',
-      } as User);
+      });
 
       const result = await service.updateProfile('user-1', {
         fullName: 'Updated Name',
@@ -518,11 +518,11 @@ describe('UsersService', () => {
     });
 
     it('should update avatarUrl', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
       repository.save.mockResolvedValue({
         ...mockUser,
         avatarUrl: 'https://new-avatar.url',
-      } as User);
+      });
 
       const result = await service.updateProfile('user-1', {
         avatarUrl: 'https://new-avatar.url',
@@ -532,11 +532,11 @@ describe('UsersService', () => {
     });
 
     it('should clear avatarUrl when set to null', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
       repository.save.mockResolvedValue({
         ...mockUser,
         avatarUrl: null,
-      } as User);
+      });
 
       const result = await service.updateProfile('user-1', {
         avatarUrl: null,
@@ -572,8 +572,8 @@ describe('UsersService', () => {
 
   describe('deleteAccount', () => {
     it('should delete user account', async () => {
-      repository.findOne.mockResolvedValue(mockUser as User);
-      repository.remove.mockResolvedValue(mockUser as User);
+      repository.findOne.mockResolvedValue(mockUser);
+      repository.remove.mockResolvedValue(mockUser);
 
       await service.deleteAccount('user-1');
 
@@ -591,7 +591,7 @@ describe('UsersService', () => {
 
   describe('hasPassword', () => {
     it('should return true when user has password', async () => {
-      mockQueryBuilder.getOne.mockResolvedValue(mockUser as User);
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
 
       const result = await service.hasPassword('user-1');
 
@@ -602,7 +602,7 @@ describe('UsersService', () => {
       mockQueryBuilder.getOne.mockResolvedValue({
         ...mockUser,
         password: null,
-      } as User);
+      });
 
       const result = await service.hasPassword('user-1');
 

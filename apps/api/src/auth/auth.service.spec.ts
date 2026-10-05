@@ -266,7 +266,7 @@ describe('AuthService', () => {
       usersService.activateUser.mockResolvedValue({
         ...unactivatedUser,
         isEmailVerified: true,
-      } as User);
+      });
 
       const result = await service.activateAccount('valid-token');
 
