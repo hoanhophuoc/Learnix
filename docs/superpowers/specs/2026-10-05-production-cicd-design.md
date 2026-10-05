@@ -23,6 +23,7 @@ The system must:
 ## Constraints and assumptions
 
 - The repository is a pnpm/Turborepo monorepo with `apps/web` and `apps/api` workspaces.
+- pnpm is upgraded to the current requested release (12.9.1) now, while CI setup must resolve the current supported pnpm release from repository/tooling policy rather than permanently hard-coding 12.9.1.
 - The existing deployment targets are Vercel for the frontend and Render for the API.
 - Docker Compose is the local production-like smoke-test environment, not the production runtime.
 - Existing uncommitted modernization changes are intentional and must be integrated rather than discarded.
@@ -68,7 +69,7 @@ The deployment job records the previous known-good deployment identifier before 
 
 ## Dependency modernization
 
-Run npm-check-updates against the root and workspace manifests, refresh `pnpm-lock.yaml`, and then validate the complete workspace. Major upgrades must be checked for framework, compiler, test-runner, and runtime compatibility. The final dependency changes must preserve the existing package manager and Node.js engine contract.
+Run npm-check-updates against the root and workspace manifests, upgrade the local package-manager toolchain to pnpm 12.9.1, refresh `pnpm-lock.yaml`, and then validate the complete workspace. Major upgrades must be checked for framework, compiler, test-runner, and runtime compatibility. The final dependency changes must preserve the existing package manager and Node.js engine contract. CI should use a supported-current pnpm resolution strategy so future pnpm releases can be adopted without another workflow edit, while lockfile installation remains frozen and reproducible.
 
 Dependency changes are accepted only when:
 
@@ -106,11 +107,11 @@ The smoke test waits for service health, checks the API and frontend HTTP endpoi
 
 ## Environments and secrets
 
-| Environment | Purpose | Deployment |
-|---|---|---|
-| development | local developer workflows and Compose | local machine |
-| staging | pre-production release verification | Vercel preview/target and Render staging service |
-| production | customer-facing release | Vercel production and Render production service |
+| Environment | Purpose                               | Deployment                                       |
+| ----------- | ------------------------------------- | ------------------------------------------------ |
+| development | local developer workflows and Compose | local machine                                    |
+| staging     | pre-production release verification   | Vercel preview/target and Render staging service |
+| production  | customer-facing release               | Vercel production and Render production service  |
 
 Non-sensitive values such as public API URLs may be GitHub Environment variables. Credentials, signing keys, provider tokens, webhook URLs, database URLs, and API keys must be GitHub Environment secrets or provider-managed secrets.
 
