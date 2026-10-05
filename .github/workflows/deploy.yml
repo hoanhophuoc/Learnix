@@ -40,28 +40,34 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/learnix-api
 
 jobs:
   required-checks:
     name: Required CI checks
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
     steps:
-      - name: Require successful CI workflow
+      - name: Require successful CI and security workflows
         uses: actions/github-script@v8
         with:
           script: |
-            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'ci.yml',
-              branch: context.ref.replace('refs/heads/', ''),
-              event: 'push',
-              per_page: 10
-            });
-            const run = runs.find((item) => item.head_sha === context.sha);
-            if (!run || run.conclusion !== 'success') {
-              core.setFailed(`CI has not passed for ${context.sha}.`);
+            for (const workflow_id of ['ci.yml', 'security.yml']) {
+              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id,
+                event: 'push',
+                head_sha: context.sha,
+                per_page: 100
+              });
+              const run = runs.find((item) => item.head_sha === context.sha);
+              if (!run) {
+                core.setFailed(`Required workflow ${workflow_id} has no run for commit ${context.sha}.`);
+              } else if (run.conclusion !== 'success') {
+                core.setFailed(`Required workflow ${workflow_id} concluded ${run.conclusion ?? 'without a conclusion'} for commit ${context.sha}.`);
+              }
             }
 
   publish:
@@ -78,6 +84,9 @@ jobs:
       image-reference: ${{ steps.reference.outputs.reference }}
     steps:
       - uses: actions/checkout@v6
+      - name: Normalize GHCR image path
+        id: image-name
+        run: echo "image-name=${GITHUB_REPOSITORY,,}/learnix-api" >> "$GITHUB_OUTPUT"
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to GHCR
@@ -93,13 +102,13 @@ jobs:
           context: .
           build-args: APP_NAME=api
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ steps.image-name.outputs.image-name }}:${{ github.sha }}
           labels: org.opencontainers.image.revision=${{ github.sha }}
           provenance: true
           sbom: true
       - name: Export immutable image reference
         id: reference
-        run: echo "reference=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.image.outputs.digest }}" >> "$GITHUB_OUTPUT"
+        run: echo "reference=${{ env.REGISTRY }}/${{ steps.image-name.outputs.image-name }}@${{ steps.image.outputs.digest }}" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Deploy ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
@@ -129,6 +138,8 @@ jobs:
       RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       PUBLIC_VITE_API_URL: ${{ vars.VITE_API_URL }}
+      VERCEL_STAGING_DOMAIN: ${{ vars.VERCEL_STAGING_DOMAIN }}
+      VERCEL_TARGET: ${{ (inputs.environment || github.event.inputs.environment || 'staging') == 'production' && 'production' || 'preview' }}
     steps:
       - uses: actions/checkout@v6
       - name: Validate deployment inputs
@@ -137,6 +148,9 @@ jobs:
             VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_FRONTEND_URL \
             RENDER_API_KEY RENDER_SERVICE_ID RENDER_API_URL DISCORD_WEBHOOK \
             PUBLIC_VITE_API_URL
+          if [[ "$DEPLOY_ENVIRONMENT" == "staging" ]]; then
+            scripts/ci/validate-required-env.sh VERCEL_STAGING_DOMAIN
+          fi
       - name: Resolve image digest
         id: image
         env:
@@ -145,6 +159,7 @@ jobs:
           set -euo pipefail
           digest="${IMAGE_DIGEST_INPUT:-$PUBLISHED_DIGEST}"
           [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "::error::An immutable sha256 image digest is required."; exit 1; }
+          echo "image-name=${GITHUB_REPOSITORY,,}/learnix-api" >> "$GITHUB_OUTPUT"
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
       - name: Capture previous provider releases
         id: capture
@@ -154,10 +169,10 @@ jobs:
           if [[ -z "$vercel" ]]; then
             vercel="$(
               npx --yes vercel@latest ls "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" --json |
-                jq -r '[.[] | select(.uid and .state == "READY" and .target == "production" and (.createdAt | type == "string") and (.createdAt | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}")))] | sort_by(.createdAt) | last | .uid // empty'
+                jq --arg target "$VERCEL_TARGET" -r '[.[] | select(.uid and .state == "READY" and .target == $target and (.createdAt | type == "string") and (.createdAt | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}")))] | sort_by(.createdAt) | last | .uid // empty'
             )"
             [[ -n "$vercel" ]] || {
-              echo "::error::No verified prior Vercel production deployment was found (state READY with deployment metadata)."
+              echo "::error::No verified prior Vercel $VERCEL_TARGET deployment was found (state READY with deployment metadata)."
               exit 1
             }
           fi
@@ -182,7 +197,12 @@ jobs:
         id: vercel
         run: |
           set -euo pipefail
-          deployment="$(npx --yes vercel@latest deploy apps/web --prod --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID" --yes)"
+          if [[ "$DEPLOY_ENVIRONMENT" == "production" ]]; then
+            deployment="$(npx --yes vercel@latest deploy apps/web --prod --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID" --yes)"
+          else
+            deployment="$(npx --yes vercel@latest deploy apps/web --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID" --yes)"
+            npx --yes vercel@latest alias set "$deployment" "$VERCEL_STAGING_DOMAIN" --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"
+          fi
           [[ "$deployment" =~ https?:// ]] || { echo "::error::Vercel did not return a deployment URL."; exit 1; }
           uid="$(npx --yes vercel@latest inspect "$deployment" --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID" --json | jq -r '.uid // empty')"
           [[ -n "$uid" ]] || { echo "::error::Vercel deployment identifier was not returned."; exit 1; }
@@ -195,7 +215,7 @@ jobs:
             -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY" \
             -H 'Content-Type: application/json' \
-            --data "{\"clearCache\":\"do_not_clear\",\"imageUrl\":\"$REGISTRY/$IMAGE_NAME@${{ steps.image.outputs.digest }}\"}" \
+            --data "{\"clearCache\":\"do_not_clear\",\"imageUrl\":\"$REGISTRY/${{ steps.image.outputs.image-name }}@${{ steps.image.outputs.digest }}\"}" \
             "$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID/deploys")"
           release="$(jq -r '.deploy.id // .id // empty' <<<"$response")"
           [[ -n "$release" ]] || { echo "::error::Render did not return a release identifier."; exit 1; }
@@ -228,6 +248,8 @@ jobs:
       RENDER_PROVIDER_API_URL: https://api.render.com
       RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
       PREVIOUS_RENDER: ${{ needs.deploy.outputs.previous-render }}
+      DEPLOY_ENVIRONMENT: ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
+      VERCEL_STAGING_DOMAIN: ${{ vars.VERCEL_STAGING_DOMAIN }}
     steps:
       - uses: actions/checkout@v6
       - name: Prepare rollback diagnostics
@@ -252,7 +274,12 @@ jobs:
           } >> "$log_file"
           vercel_failed=0
           render_failed=0
-          if npx --yes vercel@latest promote "$PREVIOUS_VERCEL" --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID" >> "$log_file" 2>&1; then
+          if [[ "$DEPLOY_ENVIRONMENT" == "production" ]]; then
+            vercel_rollback_command=(npx --yes vercel@latest promote "$PREVIOUS_VERCEL" --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID")
+          else
+            vercel_rollback_command=(npx --yes vercel@latest alias set "$PREVIOUS_VERCEL" "$VERCEL_STAGING_DOMAIN" --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID")
+          fi
+          if "${vercel_rollback_command[@]}" >> "$log_file" 2>&1; then
             echo "vercel_rollback=passed" >> "$log_file"
           else
             echo "vercel_rollback=failed" >> "$log_file"

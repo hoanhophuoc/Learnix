@@ -5,6 +5,8 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 validate="$root/scripts/ci/validate-required-env.sh"
 health="$root/scripts/ci/check-deployment-health.sh"
 workflow="$root/.github/workflows/deploy.yml"
+ci_workflow="$root/.github/workflows/ci.yml"
+security_workflow="$root/.github/workflows/security.yml"
 fixture_dir="$(mktemp -d)"
 server_pid=''
 cleanup() {
@@ -50,12 +52,34 @@ if "$health" --name fixture-timeout --url http://127.0.0.1:18991/slow --timeout 
 fi
 
 grep -Fq 'continue-on-error: true' "$workflow"
+grep -Fq "Authorization: ******" "$workflow"
+if grep -Fq "Authorization: ******" "$workflow"; then
+  echo "Render requests still use a placeholder authorization value" >&2
+  exit 1
+fi
+grep -Fq 'actions: read' "$workflow"
+grep -Fq 'VERCEL_TARGET' "$workflow"
+grep -Fq 'alias set' "$workflow"
+ghcr_image_path="\${GITHUB_REPOSITORY,,}/learnix-api"
+grep -Fq "$ghcr_image_path" "$workflow"
+grep -Fq 'Require successful CI and security workflows' "$workflow"
+grep -Fq "workflow_id, event: 'push', head_sha: context.sha" "$workflow" || grep -Fq 'head_sha: context.sha' "$workflow"
+grep -Fq 'A required CI job did not succeed' "$ci_workflow"
+grep -Fq "needs.e2e.result" "$ci_workflow"
+grep -Fq '!= "success"' "$ci_workflow"
+grep -Fq '!= "skipped"' "$ci_workflow"
+if grep -Fq 'actions: read' "$security_workflow"; then
+  echo "security workflow has unnecessary actions read permission" >&2
+  exit 1
+fi
 grep -Fq 'name: Upload rollback diagnostics' "$workflow"
 grep -Fq 'if: always()' "$workflow"
 grep -Fq 'Provider rollback failed; inspect deployment-rollback-diagnostics.' "$workflow"
 grep -Fq "priority: \${{ needs.deploy.result != 'success' && needs.rollback.result != 'success' && 'high' || 'normal' }}" "$workflow"
 grep -Fq 'state == "READY"' "$workflow"
-grep -Fq '.target == "production"' "$workflow"
+vercel_target_filter=".target == \$target"
+grep -Fq "$vercel_target_filter" "$workflow"
+grep -Fq "'production' && 'production' || 'preview'" "$workflow"
 grep -Fq 'createdAt | type == "string"' "$workflow"
 grep -Fq 'status == "live" or .status == "succeeded"' "$workflow"
 grep -Fq 'finishedAt | type == "string"' "$workflow"

@@ -64,11 +64,12 @@ approval/review is therefore configured in GitHub, not encoded in shell logic.
 
 The workflow:
 
-1. Verifies a successful CI push run for the exact commit.
+1. Verifies successful CI and security push runs for the exact commit; a
+   missing or non-successful workflow run blocks deployment.
 2. Builds and publishes the API image to GHCR with commit-SHA tagging,
    provenance, and SBOM, unless an existing digest was supplied.
-3. Captures a verified previous Vercel production deployment and Render
-   release, unless explicit identifiers were supplied.
+3. Captures a verified previous Vercel deployment for the selected target and
+   the matching Render release, unless explicit identifiers were supplied.
 4. Deploys the frontend to Vercel and the immutable API image to Render.
 5. Probes `RENDER_API_URL/health` expecting an exact `OK` line and probes the
    frontend root URL.
@@ -130,12 +131,18 @@ Configure these **environment variables**:
   workflow maps this to `PUBLIC_VITE_API_URL` but does not inject it into the
   Vercel build; configure the same `VITE_API_URL` value in the Vercel project
   environment/build settings for each target environment.
+- `VERCEL_STAGING_DOMAIN`: staging-only Vercel alias used for preview deploys
+  and staging rollback.
 
 The Render service must already be an image-backed service configured for the
 same GHCR host/repository/image name. GHCR pull credentials belong in the
 Render provider secret store. The workflow uses the fixed Render API endpoint
 `https://api.render.com`; `RENDER_API_URL` is the application URL, not that
-provider endpoint.
+provider endpoint. Render requests use the environment-scoped
+`RENDER_API_KEY` only in the bearer header and never log it. GHCR owner and
+repository names are normalized to lowercase before image publication or
+Render deployment. Staging uses a Vercel preview deployment and alias; only
+production uses Vercel production promotion.
 
 For Sonar, set repository variable `SONAR_ENABLED=true` only after the
 repository has a `SONAR_TOKEN` secret. For security failure notifications,

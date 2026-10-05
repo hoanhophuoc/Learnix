@@ -260,14 +260,22 @@ jobs:
     steps:
       - name: Check CI status
         run: |
-          if [[ "${{ needs.format.result }}" == "failure" ]] || \
-             [[ "${{ needs.backend.result }}" == "failure" ]] || \
-             [[ "${{ needs.frontend.result }}" == "failure" ]] || \
-             [[ "${{ needs.react-doctor.result }}" == "failure" ]] || \
-             [[ "${{ needs.container.result }}" == "failure" ]] || \
-             [[ "${{ needs.compose-smoke.result }}" == "failure" ]] || \
-             [[ "${{ needs.e2e.result }}" == "failure" ]]; then
-            echo "❌ CI failed"
+          required_results=(
+            "${{ needs.format.result }}"
+            "${{ needs.backend.result }}"
+            "${{ needs.frontend.result }}"
+            "${{ needs.react-doctor.result }}"
+            "${{ needs.container.result }}"
+            "${{ needs.compose-smoke.result }}"
+          )
+          for result in "${required_results[@]}"; do
+            if [[ "$result" != "success" ]]; then
+              echo "::error::A required CI job did not succeed: $result"
+              exit 1
+            fi
+          done
+          if [[ "${{ needs.e2e.result }}" != "success" && "${{ needs.e2e.result }}" != "skipped" ]]; then
+            echo "::error::E2E must succeed or be intentionally skipped on non-PR events."
             exit 1
           fi
           echo "✅ All CI checks passed"
