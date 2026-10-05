@@ -251,10 +251,20 @@ export function SystemStatsPage() {
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                         }}
                         itemStyle={{ color: '#22c55e' }}
-                        formatter={(value: number | undefined) => [
-                          `$${value ?? 0}`,
-                          'Revenue',
-                        ]}
+                        formatter={(
+                          value:
+                            | number
+                            | string
+                            | readonly (string | number)[]
+                            | undefined,
+                        ) => {
+                          const display: number | string =
+                            typeof value === 'number' ||
+                            typeof value === 'string'
+                              ? value
+                              : 0;
+                          return [`$${display}`, 'Revenue'];
+                        }}
                       />
                       <Area
                         type="monotone"
@@ -388,11 +398,16 @@ export function SystemStatsPage() {
                           borderRadius: '12px',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                         }}
-                        labelFormatter={(value: string) =>
-                          new Date(value).toLocaleDateString(undefined, {
+                        labelFormatter={(label: React.ReactNode) => {
+                          const str =
+                            typeof label === 'string' ||
+                            typeof label === 'number'
+                              ? String(label)
+                              : '';
+                          return new Date(str).toLocaleDateString(undefined, {
                             dateStyle: 'medium',
-                          })
-                        }
+                          });
+                        }}
                       />
                       <Bar
                         dataKey="count"

@@ -1,10 +1,7 @@
 import { api } from '@/lib/api';
 
 export type QuestionType =
-  | 'multiple_choice'
-  | 'multi_select'
-  | 'true_false'
-  | 'short_answer';
+  'multiple_choice' | 'multi_select' | 'true_false' | 'short_answer';
 
 export interface Question {
   id: string;

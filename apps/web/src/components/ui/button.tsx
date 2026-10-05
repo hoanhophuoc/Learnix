@@ -6,11 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'outline'
-  | 'ghost'
-  | 'destructive';
+  'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

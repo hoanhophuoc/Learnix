@@ -102,8 +102,7 @@ export function QuizGenerationModal({
         data,
       );
       return response.data as
-        | { title: string; questions: GeneratedQuestion[] }
-        | GeneratedQuestion[];
+        { title: string; questions: GeneratedQuestion[] } | GeneratedQuestion[];
     },
     onSuccess: (data) => {
       // Handle new response format { title, questions }

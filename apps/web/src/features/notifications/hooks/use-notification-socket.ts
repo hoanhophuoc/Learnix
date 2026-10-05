@@ -57,7 +57,7 @@ export function useNotificationSocket() {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
-        requestAnimationFrame(() => setIsConnected(false));
+        setIsConnected(false);
       }
       return;
     }
@@ -78,7 +78,7 @@ export function useNotificationSocket() {
 
     socketRef.current = socket;
 
-    socket.on('connect', () => {
+    const handleConnect = () => {
       setIsConnected(true);
       // Re-fetch unread count on connection to ensure we didn't miss any while disconnected
       void queryClient.invalidateQueries({
@@ -88,20 +88,26 @@ export function useNotificationSocket() {
       void queryClient.invalidateQueries({
         queryKey: ['notifications', 1, 10],
       });
-    });
+    };
 
-    socket.on('disconnect', () => {
+    const handleDisconnect = () => {
       setIsConnected(false);
-    });
+    };
 
-    socket.on('connect_error', () => {
+    const handleConnectError = () => {
       setIsConnected(false);
-    });
+    };
 
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    socket.on('connect_error', handleConnectError);
     socket.on('notification', handleNewNotification);
     socket.on('unread-count', handleUnreadCount);
 
     return () => {
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+      socket.off('connect_error', handleConnectError);
       socket.off('notification', handleNewNotification);
       socket.off('unread-count', handleUnreadCount);
       socket.disconnect();

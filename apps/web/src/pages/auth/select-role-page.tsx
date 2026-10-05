@@ -86,7 +86,8 @@ export function SelectRolePage() {
         window.location.href =
           updatedUser.role === 'admin' ? '/admin' : '/dashboard';
       } else {
-        throw new Error('Role update failed');
+        setError('Role update failed');
+        setIsSubmitting(false);
       }
     } catch (err: unknown) {
       const errorMessage =

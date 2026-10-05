@@ -93,7 +93,7 @@ export function CoursesPage() {
 
   const debouncedSearch = useDebounceValue(effectiveSearch, 500);
   const { ref, inView } = useInView(); // Infinite scroll trigger
-  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
     () => () => {

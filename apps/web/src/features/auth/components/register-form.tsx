@@ -67,6 +67,7 @@ export function RegisterForm() {
       setSuccess(
         'A new activation email has been sent. Please check your inbox.',
       );
+      setIsResending(false);
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error && 'response' in err
@@ -74,7 +75,6 @@ export function RegisterForm() {
               ?.data?.message
           : 'Failed to resend activation email';
       setError(errorMessage ?? 'Failed to resend activation email');
-    } finally {
       setIsResending(false);
     }
   };

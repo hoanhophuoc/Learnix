@@ -1558,7 +1558,7 @@ function AddLessonDialog({
       });
 
       // Use setTimeout to avoid 'setState in effect' warning for synchronous updates
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         // Initialize resources
         setPendingResources(existingLesson?.resources ?? []);
         setRemovedResourceIds([]);
@@ -1600,11 +1600,12 @@ function AddLessonDialog({
             new Map([['javascript', getDefaultExpectedOutput('javascript')]]),
           );
           setTestCodes(new Map());
-          setTestCodes(new Map());
           setPendingResources([]);
           setRemovedResourceIds([]);
         }
       }, 0);
+
+      return () => clearTimeout(timer);
     }
   }, [open, existingLesson, form]);
 
@@ -1709,13 +1710,11 @@ function AddLessonDialog({
   });
 
   const onSubmit = (data: LessonFormData) => {
-    const content = data.content as LessonBlock[];
-
     mutation.mutate({
       ...data,
-      content,
+      content: data.content as LessonBlock[],
       orderIndex: existingLesson?.orderIndex ?? defaultOrderIndex,
-    } as CreateLessonData);
+    });
   };
 
   return (
@@ -2145,9 +2144,9 @@ function QuizCreationDialog({
           state: { title: manualTitle.trim() },
         },
       );
+      setIsSubmittingManual(false);
     } catch (_err: unknown) {
       toast.error('Unable to create quiz');
-    } finally {
       setIsSubmittingManual(false);
     }
   };

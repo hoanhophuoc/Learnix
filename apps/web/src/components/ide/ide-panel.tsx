@@ -159,8 +159,10 @@ export function IdePanel({
     return () => clearTimeout(handler);
   }, [code, currentLanguage, lessonId]);
 
-  useEffect(() => {
-    clearMarkers();
+  const currentLangKey = `${lessonId}_${currentLanguage}`;
+  const [prevLangKey, setPrevLangKey] = useState(currentLangKey);
+  if (currentLangKey !== prevLangKey) {
+    setPrevLangKey(currentLangKey);
     const saved = getSavedCode(currentLanguage);
     if (saved !== null) {
       setCode(saved);
@@ -172,7 +174,11 @@ export function IdePanel({
         setCode(config.initialCode);
       }
     }
-  }, [currentLanguage, allowedLanguages, lessonId, getSavedCode, clearMarkers]);
+  }
+
+  useEffect(() => {
+    clearMarkers();
+  }, [currentLanguage, lessonId, clearMarkers]);
 
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
@@ -263,12 +269,12 @@ export function IdePanel({
           onSuccess?.();
         }
       }
+      setIsRunning(false);
     } catch (error: any) {
       setOutput(String(error.message ?? error));
       setExecutionResult('error');
       toast.error('Failed to run code.');
       setActiveTab('console'); // Force console on crash
-    } finally {
       setIsRunning(false);
     }
   };

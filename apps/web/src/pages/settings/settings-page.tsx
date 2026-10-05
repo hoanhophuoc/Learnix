@@ -144,13 +144,11 @@ function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
     },
   });
 
-  // Sync avatar state when user prop changes (e.g., after refresh)
-  useEffect(() => {
-    if (user?.avatarUrl !== undefined) {
-      setAvatarUrl(user.avatarUrl ?? '');
-      setValue('avatarUrl', user.avatarUrl ?? '', { shouldDirty: false });
-    }
-  }, [user?.avatarUrl, setValue]);
+  const [prevUserAvatar, setPrevUserAvatar] = useState(user?.avatarUrl);
+  if (user?.avatarUrl !== prevUserAvatar) {
+    setPrevUserAvatar(user?.avatarUrl);
+    setAvatarUrl(user?.avatarUrl ?? '');
+  }
 
   // Handle avatar upload
   const handleAvatarChange = (url: string | undefined) => {
@@ -166,6 +164,7 @@ function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
       await onUpdate();
       toast.success('Profile updated successfully');
       reset(data);
+      setIsSubmitting(false);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error && 'response' in error
@@ -176,7 +175,6 @@ function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
         errorMessage ??
           'Unable to update your profile. Please check your information and try again.',
       );
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -331,6 +329,7 @@ function SecuritySection({ hasPassword }: SecuritySectionProps) {
       });
       toast.success('Password changed successfully');
       reset();
+      setIsSubmitting(false);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error && 'response' in error
@@ -341,7 +340,6 @@ function SecuritySection({ hasPassword }: SecuritySectionProps) {
         errorMessage ??
           'Unable to change your password. Please verify your current password and try again.',
       );
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -540,6 +538,8 @@ function DangerZoneSection({ hasPassword, onDelete }: DangerZoneSectionProps) {
     resolver: zodResolver(deleteAccountSchema),
   });
 
+  // react-doctor-disable-next-line react-hooks-js/incompatible-library
+  // eslint-disable-next-line react-hooks/incompatible-library
   const confirmation = watch('confirmation');
 
   const onSubmit = async (data: DeleteAccountData) => {
@@ -547,10 +547,11 @@ function DangerZoneSection({ hasPassword, onDelete }: DangerZoneSectionProps) {
       setIsSubmitting(true);
       await authApi.deleteAccount({
         password: data.password,
-        confirmation: data.confirmation as string,
+        confirmation: data.confirmation,
       });
       toast.success('Account deleted successfully');
       await onDelete();
+      setIsSubmitting(false);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error && 'response' in error
@@ -561,7 +562,6 @@ function DangerZoneSection({ hasPassword, onDelete }: DangerZoneSectionProps) {
         errorMessage ??
           'Unable to delete your account. Please try again or contact support if the problem persists.',
       );
-    } finally {
       setIsSubmitting(false);
     }
   };

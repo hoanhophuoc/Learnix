@@ -36,10 +36,10 @@ export function ForgotPasswordPage() {
       setIsSubmitting(true);
       await authApi.forgotPassword(data);
       setIsSuccess(true);
+      setIsSubmitting(false);
     } catch {
       // Always show success for security (don't reveal if email exists)
       setIsSuccess(true);
-    } finally {
       setIsSubmitting(false);
     }
   };

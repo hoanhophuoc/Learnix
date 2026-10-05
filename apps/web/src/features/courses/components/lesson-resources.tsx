@@ -422,9 +422,9 @@ function AddResourceDialog({
       setUrl('');
       setSelectedFiles([]);
       setType('link');
+      setIsSubmitting(false);
     } catch (_error) {
       toast.error('Failed to add resource');
-    } finally {
       setIsSubmitting(false);
     }
   };

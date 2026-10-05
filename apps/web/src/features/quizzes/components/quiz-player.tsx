@@ -493,8 +493,7 @@ function QuizResultView({
         <div className="grid gap-6">
           {quiz.questions.map((question, index) => {
             const userAnswer = submission.responses[question.id] as
-              | string
-              | undefined;
+              string | undefined;
             const isCorrect = compareAnswers(question, userAnswer ?? '');
 
             return (

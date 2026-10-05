@@ -71,9 +71,11 @@ export function ImageUpload({
 
   // Reset image error when display URL changes
   const displayUrl = previewUrl ?? value ?? fallbackUrl;
-  useEffect(() => {
+  const [prevDisplayUrl, setPrevDisplayUrl] = useState(displayUrl);
+  if (displayUrl !== prevDisplayUrl) {
+    setPrevDisplayUrl(displayUrl);
     setImageError(false);
-  }, [displayUrl]);
+  }
 
   const handleFileSelect = useCallback(
     async (file: File) => {
@@ -108,6 +110,7 @@ export function ImageUpload({
           revokePreviewUrl(previewUrl);
         }
         setPreviewUrl(null);
+        setIsUploading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed');
         // Revert preview on error
@@ -115,7 +118,6 @@ export function ImageUpload({
           revokePreviewUrl(preview);
         }
         setPreviewUrl(null);
-      } finally {
         setIsUploading(false);
       }
     },

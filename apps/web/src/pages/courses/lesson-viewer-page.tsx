@@ -361,7 +361,7 @@ function LessonContent({
               return (
                 <div key={block.id} className="max-w-none my-6 text-foreground">
                   <ReactMarkdown
-                    components={markdownComponents as any}
+                    components={markdownComponents}
                     remarkPlugins={[remarkGfm]}
                   >
                     {block.content}

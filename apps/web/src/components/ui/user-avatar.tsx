@@ -44,15 +44,15 @@ export function UserAvatar({
   className,
   size = 'md',
 }: UserAvatarProps) {
-  const [imageError, setImageError] = React.useState(false);
-
   // Determine which image source to use
   const imageSrc = avatarUrl ?? oauthAvatarUrl;
+  const [imageError, setImageError] = React.useState(false);
+  const [prevImageSrc, setPrevImageSrc] = React.useState(imageSrc);
 
-  // Reset error state when image source changes
-  React.useEffect(() => {
+  if (imageSrc !== prevImageSrc) {
+    setPrevImageSrc(imageSrc);
     setImageError(false);
-  }, [imageSrc]);
+  }
 
   // Generate initials from name or email
   const getInitials = () => {

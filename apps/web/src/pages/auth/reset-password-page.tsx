@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -25,13 +25,14 @@ type ResetStatus = 'loading' | 'ready' | 'success' | 'error';
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<ResetStatus>('loading');
-  const [errorMessage, setErrorMessage] = useState('');
+  const token = searchParams.get('token');
+  const [status, setStatus] = useState<ResetStatus>(token ? 'ready' : 'error');
+  const [errorMessage, setErrorMessage] = useState(
+    token ? '' : 'Invalid reset link. No token provided.',
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const token = searchParams.get('token');
 
   const {
     register,
@@ -40,16 +41,6 @@ export function ResetPasswordPage() {
   } = useForm<ResetPasswordData>({
     resolver: zodResolver(resetPasswordSchema),
   });
-
-  useEffect(() => {
-    if (!token) {
-      setStatus('error');
-      setErrorMessage('Invalid reset link. No token provided.');
-    } else {
-      // Token exists, show the reset form
-      setStatus('ready');
-    }
-  }, [token]);
 
   const onSubmit = async (data: ResetPasswordData) => {
     if (!token) {
@@ -60,6 +51,7 @@ export function ResetPasswordPage() {
       setIsSubmitting(true);
       await authApi.resetPassword(token, data.newPassword);
       setStatus('success');
+      setIsSubmitting(false);
     } catch (error: unknown) {
       setStatus('error');
       const errorMsg =
@@ -68,7 +60,6 @@ export function ResetPasswordPage() {
               ?.data?.message
           : 'Failed to reset password';
       setErrorMessage(errorMsg ?? 'Failed to reset password');
-    } finally {
       setIsSubmitting(false);
     }
   };

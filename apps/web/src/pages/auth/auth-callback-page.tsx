@@ -17,6 +17,10 @@ export function AuthCallbackPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let cookieTimeoutId: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+
     const handleCallback = async () => {
       try {
         // Token is now stored in encrypted HTTP-only cookie by backend
@@ -24,10 +28,14 @@ export function AuthCallbackPage() {
         // The encrypted cookie will be sent automatically with the API request
 
         // Small delay to ensure cookie is set before making API call
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => {
+          cookieTimeoutId = setTimeout(resolve, 100);
+        });
+        if (cancelled) return;
 
         // Refresh user state from server (encrypted cookie is sent automatically)
         const user = await refreshUser();
+        if (cancelled) return;
 
         // Redirect based on user role status
         if (!user?.role) {
@@ -37,14 +45,21 @@ export function AuthCallbackPage() {
             user.role === 'admin' ? '/admin' : '/dashboard';
         }
       } catch {
+        if (cancelled) return;
         setError('Authentication failed. Please try again.');
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           void navigate('/login');
         }, 2000);
       }
     };
 
     void handleCallback();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (cookieTimeoutId) clearTimeout(cookieTimeoutId);
+    };
   }, [refreshUser, navigate]);
 
   if (error) {

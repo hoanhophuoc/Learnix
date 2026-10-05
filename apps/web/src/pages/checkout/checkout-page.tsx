@@ -133,7 +133,8 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     try {
       await processPaymentMutation.mutateAsync();
-    } finally {
+      setIsProcessing(false);
+    } catch {
       setIsProcessing(false);
     }
   };

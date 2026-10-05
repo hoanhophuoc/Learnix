@@ -213,7 +213,7 @@ describe('CourseDetailPage', () => {
 
     // Check for lock icons in the document
     const lockButtons = document.querySelectorAll(
-      'button:has([class*="Lock"])',
+      'button:has([class*="lock" i])',
     );
     expect(lockButtons.length).toBeGreaterThan(0);
   });

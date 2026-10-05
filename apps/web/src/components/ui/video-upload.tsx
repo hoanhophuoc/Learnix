@@ -87,6 +87,7 @@ export function VideoUpload({
           revokePreviewUrl(previewUrl);
         }
         setPreviewUrl(null);
+        setIsUploading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed');
         // Revert preview on error
@@ -94,7 +95,6 @@ export function VideoUpload({
           revokePreviewUrl(preview);
         }
         setPreviewUrl(null);
-      } finally {
         setIsUploading(false);
       }
     },
