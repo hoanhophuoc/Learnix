@@ -2,7 +2,8 @@
 
 ## Status
 
-Implemented the protected deployment workflow and committed it as:
+Implemented the protected deployment workflow and committed the first review
+fix round as:
 
 `ci: add protected deployment and rollback flow`
 
@@ -28,7 +29,8 @@ Implemented the protected deployment workflow and committed it as:
     uses the captured deployment UID; Render rollback uses the captured deploy
     ID through the documented service rollback API.
   - Failure/success notification path with safe repository, run, frontend, and
-    API links only.
+      API links only. Rollback failure now emits `rollback_failed` with high
+      priority.
 - Extended `.github/actions/notify/action.yml` with optional safe provider
   links while preserving non-blocking webhook failure behavior.
 - Added `scripts/ci/validate-required-env.sh` for explicit required-value
@@ -38,6 +40,16 @@ Implemented the protected deployment workflow and committed it as:
   validation.
 - Added `scripts/ci/test-deployment-scripts.sh` with a local HTTP fixture
   covering success, missing values, non-2xx, and timeout behavior.
+- Rollback now records safe provider identifiers and run/provider links before
+  invoking either provider, uploads `rollback.log` under `always()`, and has a
+  final unconditional failure gate. The notification distinguishes completed
+  rollback from rollback failure and adds a `priority` field.
+- Automatic previous-release capture no longer selects list index zero. Vercel
+  candidates must be production-targeted `READY` deployments with metadata;
+  Render candidates must be successful/live releases with an immutable
+  `sha256` image digest. If no candidate passes those filters, capture fails
+  before provider mutation. Manual dispatch identifiers remain accepted as
+  explicit rollback references.
 
 ## Environment contract
 
@@ -74,6 +86,8 @@ Passed:
 - `pnpm exec prettier --check .github/workflows/deploy.yml
 .github/actions/notify/action.yml`.
 - `git diff --check`.
+- Rollback/capture contract fixtures in
+  `scripts/ci/test-deployment-scripts.sh`.
 
 ## Provider-backed verification
 

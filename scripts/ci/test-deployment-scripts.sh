@@ -4,6 +4,7 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 validate="$root/scripts/ci/validate-required-env.sh"
 health="$root/scripts/ci/check-deployment-health.sh"
+workflow="$root/.github/workflows/deploy.yml"
 fixture_dir="$(mktemp -d)"
 server_pid=''
 cleanup() {
@@ -45,6 +46,19 @@ if "$health" --name fixture-status --url http://127.0.0.1:18991/bad --attempts 1
 fi
 if "$health" --name fixture-timeout --url http://127.0.0.1:18991/slow --timeout 1 --attempts 1 >/dev/null 2>&1; then
   echo "timeout health check unexpectedly passed" >&2
+  exit 1
+fi
+
+grep -Fq 'continue-on-error: true' "$workflow"
+grep -Fq 'name: Upload rollback diagnostics' "$workflow"
+grep -Fq 'if: always()' "$workflow"
+grep -Fq 'Provider rollback failed; inspect deployment-rollback-diagnostics.' "$workflow"
+grep -Fq "priority: \${{ needs.rollback.result == 'failure' && 'high' || 'normal' }}" "$workflow"
+grep -Fq 'state == "READY"' "$workflow"
+grep -Fq 'status == "live" or .status == "succeeded"' "$workflow"
+grep -Fq 'sha256:[a-f0-9]{64}' "$workflow"
+if grep -Fq '.[0].uid' "$workflow" || grep -Fq 'deploys?limit=1"' "$workflow"; then
+  echo "previous-release capture still uses an unverified first/latest provider result" >&2
   exit 1
 fi
 

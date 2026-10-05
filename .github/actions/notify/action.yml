@@ -18,6 +18,10 @@ inputs:
     description: Safe provider links or identifiers
     required: false
     default: ''
+  priority:
+    description: Notification priority
+    required: false
+    default: normal
 
 runs:
   using: composite
@@ -30,6 +34,7 @@ runs:
         NOTIFICATION_MESSAGE: ${{ inputs.message }}
         NOTIFICATION_WEBHOOK_URL: ${{ inputs.webhook-url }}
         NOTIFICATION_PROVIDER_LINKS: ${{ inputs.provider-links }}
+        NOTIFICATION_PRIORITY: ${{ inputs.priority }}
       run: |
         set -euo pipefail
         payload="$(jq -n \
@@ -40,7 +45,8 @@ runs:
           --arg status "$NOTIFICATION_STATUS" \
           --arg message "$NOTIFICATION_MESSAGE" \
           --arg provider_links "$NOTIFICATION_PROVIDER_LINKS" \
-          '{repository: $repository, commit: $commit, workflow_run_url: $run_url, environment: $environment, result: $status, message: $message, provider_links: $provider_links}')"
+          --arg priority "$NOTIFICATION_PRIORITY" \
+          '{repository: $repository, commit: $commit, workflow_run_url: $run_url, environment: $environment, result: $status, priority: $priority, message: $message, provider_links: $provider_links}')"
         if ! curl --fail --silent --show-error --max-time 10 \
           -X POST \
           -H 'Content-Type: application/json' \

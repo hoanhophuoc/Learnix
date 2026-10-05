@@ -152,16 +152,26 @@ jobs:
           set -euo pipefail
           vercel="$PREVIOUS_VERCEL_INPUT"
           if [[ -z "$vercel" ]]; then
-            vercel="$(npx --yes vercel@latest ls "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" --json | jq -r '.[0].uid // empty')"
+            vercel="$(
+              npx --yes vercel@latest ls "$VERCEL_PROJECT_ID" --scope "$VERCEL_ORG_ID" --token "$VERCEL_TOKEN" --json |
+                jq -r '[.[] | select(.uid and .state == "READY" and ((.target // "production") == "production") and (.createdAt // .created // 0))] | sort_by(.createdAt // .created) | last | .uid // empty'
+            )"
+            [[ -n "$vercel" ]] || {
+              echo "::error::No verified prior Vercel production deployment was found (state READY with deployment metadata)."
+              exit 1
+            }
           fi
           render="$PREVIOUS_RENDER_INPUT"
           if [[ -z "$render" ]]; then
             render="$(curl --fail --silent --show-error --max-time 20 \
               -H "Authorization: Bearer $RENDER_API_KEY" \
-              "$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID/deploys?limit=1" | jq -r '.[0].deploy.id // .[0].id // empty')"
+              "$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID/deploys?limit=100" |
+              jq -r '[.[] | select((.status == "live" or .status == "succeeded") and ((.image.sha // "") | test("^sha256:[a-f0-9]{64}$")) and (.id // .deploy.id))] | sort_by(.finishedAt // .createdAt) | last | (.id // .deploy.id // empty)')"
+            [[ -n "$render" ]] || {
+              echo "::error::No verified prior Render release was found (successful status with immutable image digest)."
+              exit 1
+            }
           fi
-          [[ -n "$vercel" && "$vercel" != "null" ]] || { echo "::error::Could not capture previous Vercel deployment."; exit 1; }
-          [[ -n "$render" && "$render" != "null" ]] || { echo "::error::Could not capture previous Render release."; exit 1; }
           {
             echo "vercel=$vercel"
             echo "render=$render"
@@ -220,11 +230,65 @@ jobs:
       PREVIOUS_RENDER: ${{ needs.deploy.outputs.previous-render }}
     steps:
       - uses: actions/checkout@v6
+      - name: Prepare rollback diagnostics
+        run: |
+          {
+            echo "rollback_run=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "vercel_deployment=${PREVIOUS_VERCEL:-unset}"
+            echo "render_release=${PREVIOUS_RENDER:-unset}"
+            echo "vercel_provider=https://vercel.com/$VERCEL_ORG_ID/$VERCEL_PROJECT_ID"
+            echo "render_provider=$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID"
+          } > rollback.log
       - name: Validate rollback identifiers
         run: scripts/ci/validate-required-env.sh PREVIOUS_VERCEL PREVIOUS_RENDER
-      - name: Roll back Vercel
-        run: npx --yes vercel@latest promote "$PREVIOUS_VERCEL" --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"
-      - name: Roll back Render
+      - name: Roll back providers and preserve diagnostics
+        id: rollback-actions
+        continue-on-error: true
+        run: |
+          set -u
+          log_file=rollback.log
+          {
+            echo "rollback_attempts=begin"
+          } >> "$log_file"
+          vercel_failed=0
+          render_failed=0
+          if npx --yes vercel@latest promote "$PREVIOUS_VERCEL" --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID" >> "$log_file" 2>&1; then
+            echo "vercel_rollback=passed" >> "$log_file"
+          else
+            echo "vercel_rollback=failed" >> "$log_file"
+            vercel_failed=1
+          fi
+          if curl --fail --silent --show-error --max-time 30 \
+            -X POST \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H 'Content-Type: application/json' \
+            --data "{\"deployId\":\"$PREVIOUS_RENDER\"}" \
+            "$RENDER_PROVIDER_API_URL/v1/services/$RENDER_SERVICE_ID/rollback" >> "$log_file" 2>&1; then
+            echo "render_rollback=passed" >> "$log_file"
+          else
+            echo "render_rollback=failed" >> "$log_file"
+            render_failed=1
+          fi
+          if [[ "$vercel_failed" -eq 1 || "$render_failed" -eq 1 ]]; then
+            exit 1
+          fi
+      - name: Upload rollback diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: deployment-rollback-diagnostics
+          path: rollback.log
+          if-no-files-found: error
+          retention-days: 14
+      - name: Fail when any rollback failed
+        if: always()
+        run: |
+          if [[ "${{ steps.rollback-actions.outcome }}" != "success" ]]; then
+            echo "::error::Provider rollback failed; inspect deployment-rollback-diagnostics."
+            exit 1
+          fi
+      - name: Legacy rollback endpoint guard
+        if: false
         run: |
           curl --fail --silent --show-error --max-time 30 \
             -X POST \
@@ -245,13 +309,13 @@ jobs:
       - name: Notify
         uses: ./.github/actions/notify
         with:
-          status: ${{ needs.deploy.result == 'success' && 'success' || 'failure' }}
+          status: ${{ needs.rollback.result == 'failure' && 'rollback_failed' || (needs.deploy.result == 'success' && 'success' || 'failure') }}
           environment: ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
           message: >-
-            Deployment ${{ needs.deploy.result == 'success' && 'succeeded' || 'failed' }}.
-            Rollback result: ${{ needs.rollback.result }}.
+            ${{ needs.rollback.result == 'failure' && 'HIGH PRIORITY: deployment failed and provider rollback failed; inspect rollback diagnostics.' || (needs.deploy.result == 'success' && 'Deployment succeeded.' || 'Deployment failed; provider rollback completed.') }}
           provider-links: >-
             run=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }};
             frontend=${{ vars.FRONTEND_URL }};
             api=${{ vars.RENDER_API_URL }}
+          priority: ${{ needs.rollback.result == 'failure' && 'high' || 'normal' }}
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
