@@ -72,7 +72,7 @@ Passed:
   provenance/SBOM, release inputs, probes, and rollback.
 - `bash -n scripts/ci/*.sh` for the Task 5 scripts.
 - `pnpm exec prettier --check .github/workflows/deploy.yml
-  .github/actions/notify/action.yml`.
+.github/actions/notify/action.yml`.
 - `git diff --check`.
 
 ## Provider-backed verification
