@@ -31,6 +31,11 @@ on:
         required: false
         type: string
         default: 'pnpm test'
+      coverage-command:
+        description: Optional command that writes coverage output
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -92,7 +97,14 @@ jobs:
           node-version: ${{ inputs.node-version }}
 
       - name: Run tests
-        run: ${{ inputs.test-command }}
+        run: |
+          mkdir -p test-results
+          ${{ inputs.test-command }} 2>&1 | tee test-results/test.log
+
+      - name: Collect coverage
+        if: always() && inputs.coverage-command != ''
+        continue-on-error: true
+        run: ${{ inputs.coverage-command }}
 
       - name: Upload coverage
         if: always()
@@ -100,8 +112,8 @@ jobs:
         with:
           name: ${{ inputs.filter }}-coverage
           path: |
-            ${{ inputs.project }}/coverage
             apps/coverage
+            ${{ inputs.project }}/coverage
           retention-days: 7
           if-no-files-found: ignore
 

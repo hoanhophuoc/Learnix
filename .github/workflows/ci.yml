@@ -78,6 +78,7 @@ jobs:
       project: apps/api
       filter: '@repo/api'
       test-command: pnpm test
+      coverage-command: pnpm exec cross-env NODE_OPTIONS='--experimental-vm-modules --localstorage-file=.jest-localstorage' jest --coverage
 
   # ==========================
   # Frontend CI
